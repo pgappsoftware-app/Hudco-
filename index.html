@@ -1,1 +1,1206 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HUDKO ULTRA ERP 2026 | Multi-Language Lifetime Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --bg: #0f172a; --card: #1e293b; --primary: #6366f1; 
+            --accent: #10b981; --danger: #ef4444; --warning: #f59e0b; 
+            --text-main: #f8fafc; --text-dim: #94a3b8;
+        }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        .p-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; margin-bottom: 15px; position: relative; }
+        
+        .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .room-box { background: #0f172a; border: 2px solid #334155; border-radius: 12px; padding: 10px; text-align: center; }
+        .bed-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin: 2px; }
+        .bed-filled { background-color: var(--primary); }
+        
+        .pending-border { border-color: var(--danger) !important; animation: blink 1.5s infinite; }
+        .blacklist-border { border: 2px dashed var(--danger) !important; background: #2d1616 !important; }
+        @keyframes blink { 50% { border-color: transparent; } }
+        
+        .mobile-nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #334155; z-index: 1000; }
+        .nav-item { text-align: center; color: var(--text-dim); font-size: 11px; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        
+        input, select, textarea { background: #0f172a !important; border: 1px solid #334155 !important; color: white !important; padding: 12px; border-radius: 12px; margin-bottom: 12px; width: 100%; }
+        .btn-action { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; }
+        .tab-content { display: none; }
+        .active-tab { display: block !important; }
+        .sos-btn { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border-radius: 50px; font-weight: bold; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        .tenant-sub-card { background: #0f172a; border-radius: 10px; padding: 12px; margin-top: 8px; border: 1px solid #475569; }
+        .preview-img { max-width: 80px; max-height: 80px; border-radius: 6px; margin-top: 5px; display: block; object-fit: cover; border: 1px solid #475569; }
+        #activationScreen { position: fixed; top:0; left:0; width:100%; height:100%; background:#090d16; z-index: 99999; display: flex; align-items:center; justify-content:center; padding:20px; }
+        #lockScreen { position: fixed; top:0; left:0; width:100%; height:100%; background:#111827; z-index: 100000; display: none; align-items:center; justify-content:center; padding:20px; text-align: center; overflow-y: auto; }
+        
+        .injector-pulse { border-left: 5px solid var(--warning) !important; background: linear-gradient(90deg, #2a2215, #1e293b) !important; animation: pulseBorder 2s infinite; }
+        @keyframes pulseBorder { 50% { border-left-color: transparent; } }
+
+        .room-actions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .button-row {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+        }
+        .row-of-3 .btn-custom-action {
+            flex: 1 1 32%;
+        }
+        .btn-custom-action { 
+            background: #1e293b; 
+            border: 1px solid #334155; 
+            color: white; 
+            padding: 10px 4px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 11px; 
+            cursor: pointer; 
+            transition: 0.2s;
+            text-align: center;
+            white-space: normal; 
+        }
+        .btn-custom-action:hover { background: #334155; }
+    </style>
+</head>
+<body>
+
+<div id="activationScreen">
+    <div class="p-card border-primary text-center w-100" style="max-width: 450px;">
+        <h3 class="text-primary fw-bold mb-2"><i class="fas fa-shield-alt"></i> HUDKO SECURITY</h3>
+        <p id="lbl_enterLicense" class="text-dim small">Enter your system license ID to unlock the platform console.</p>
+        <input type="text" id="activationKeyInput" placeholder="Enter License Key (eg: Nitesh_098)" style="text-align: center;">
+        <button class="btn-action mt-2" id="btnVerifyLicense">Verify & Open Dashboard</button>
+    </div>
+</div>
+
+<div id="lockScreen">
+    <div class="p-card border-danger text-center w-100" style="max-width: 450px; background: #111827;">
+        <h1 class="text-danger mb-2"><i class="fas fa-exclamation-triangle"></i> <span id="lbl_lockTitle">ACCESS RESTRICTED</span></h1>
+        <h4 id="lbl_lockSub" class="fw-bold text-white mb-3">SUBSCRIPTION PLAN EXPIRED</h4>
+        <p id="lbl_lockDesc" class="text-dim small">ನಿಮ್ಮ ಮಾಸಿಕ ಲೈಸೆನ್ಸ್ ಅವಧಿ ಮುಗಿದಿದೆ. ಅಡ್ಮಿನ್ ಕಂಟ್ರೋಲ್ ಪ್ಯಾನಲ್ ಮತ್ತು ಲೈವ್ ಡೇಟಾ ಪ್ರವೇಶವನ್ನು ತಾತ್ಕಾಲಿಕವಾಗಿ ನಿಲ್ಲಿಸಲಾಗಿದೆ. ಸೇವೆಯನ್ನು ಮುಂದುವರಿಸಲು ತಕ್ಷಣ ನವೀಕರಿಸಿ.</p>
+        
+        <div class="p-2 mb-3 rounded bg-dark border border-secondary text-start" style="font-size:13px;">
+            <span class="text-dim">Your Active Package:</span> <b class="text-warning float-end" id="lockPlanName">Loading...</b><br>
+            <span class="text-dim">Renewal Bill Amount:</span> <b class="text-success float-end" id="lockPlanAmount">₹0.00</b>
+        </div>
+
+        <div class="p-3 bg-white rounded my-2 text-center d-inline-block" style="border: 2px solid var(--danger);">
+            <img id="upiQrCodeImg" src="" alt="Scan to Pay" style="width: 200px; height: 200px; display: block; margin: 0 auto;">
+            <small class="text-dark d-block mt-2 fw-bold"><i class="fas fa-qrcode"></i> Scan using GooglePay, PhonePe, Paytm</small>
+        </div>
+
+        <div class="p-3 bg-dark rounded border border-secondary mb-2">
+            <small id="lbl_lockContact" class="text-warning d-block mb-1">To resume data-synchronization, contact:</small>
+            <b class="text-white d-block mb-2">Nitesh Kumar (HUDKO Media)</b>
+            
+            <a id="directPayBtn" href="#" class="btn btn-primary w-100 fw-bold py-2 mb-2">
+                <i class="fas fa-credit-card"></i> Pay Now (Direct UPI)
+            </a>
+            <a id="whatsappScreenshotBtn" href="#" target="_blank" class="btn btn-success w-100 fw-bold py-2">
+                <i class="fab fa-whatsapp"></i> Send Payment Screenshot
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="mainAppContent" style="display: none;">
+    <div class="p-3 d-flex justify-content-between align-items-center bg-dark border-bottom border-secondary sticky-top">
+        <div>
+            <h5 class="fw-bold text-primary m-0" id="brandText"><i class="fas fa-bolt"></i> HUDKO ULTRA ERP</h5>
+            <small id="activePGTitle" class="text-dim"></small>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <button class="btn btn-sm btn-danger sos-btn px-3" id="btnSOS"><i class="fas fa-ambulance"></i> SOS</button>
+            <select id="langSwitcher" style="width: auto; margin:0; background: #1e293b !important; padding: 5px 10px;">
+                <option value="en">English</option>
+                <option value="kn">ಕನ್ನಡ</option>
+            </select>
+            <select id="pgSwitcher" style="width: auto; margin:0; padding: 5px 10px; background: #1e293b !important; color: white;"></select>
+        </div>
+    </div>
+
+    <div id="dashboard" class="tab-content active-tab p-3 feature-content-view">
+        <div class="p-card injector-pulse mb-3" id="globalNoticeDisplayBox" style="display: none;">
+            <div class="d-flex justify-content-between align-items-start">
+                <div style="width: 100%;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="text-warning fw-bold m-0"><i class="fas fa-bullhorn"></i> <span id="lbl_liveNoticeTitle">LIVE GLOBAL BROADCAST NOTICE</span></h6>
+                        <button class="btn btn-sm btn-danger py-0 px-2 fw-bold" id="btnDeleteGlobalNotice" style="font-size: 11px;"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                    <p id="liveNoticeContentText" class="text-white mt-2 mb-1" style="font-size: 14px; font-weight: 500; white-space: pre-wrap;"></p>
+                    <small id="liveNoticeMetaText" class="text-dim" style="font-size: 11px;"></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-2 mb-4">
+            <div class="col-6 col-md-3"><div class="p-card text-center"><h6 id="lbl_rev">Rent Revenue</h6><h4 id="rev" class="text-accent">₹0</h4></div></div>
+            <div class="col-6 col-md-3"><div class="p-card text-center"><h6 id="lbl_depo">Deposits Held</h6><h4 id="depoTotal" class="text-warning">₹0</h4></div></div>
+            <div class="col-6 col-md-3"><div class="p-card text-center"><h6 id="lbl_spend">Total Spend</h6><h4 id="spendTotal" class="text-danger">₹0</h4></div></div>
+            <div class="col-6 col-md-3"><div class="p-card text-center"><h6 id="lbl_profit">Net Profit</h6><h4 id="profit" class="text-primary">₹0</h4></div></div>
+        </div>
+
+        <div class="p-card border-danger mb-3" style="background: #1e1b29;">
+            <h6 class="text-danger"><i class="fas fa-calculator"></i> <span id="lbl_fineTitle">Auto-Pilot Rent Due & Late Fine Status</span></h6>
+            <div id="autoFineStatusList" style="font-size:13px; color: var(--text-dim);">Checking analytics engine...</div>
+        </div>
+
+        <div class="p-card border-warning mb-3">
+            <h6 class="text-warning"><i class="fas fa-hourglass-half"></i> <span id="lbl_predTitle">15 Days Expected Checkouts (AI Prediction)</span></h6>
+            <div id="predictionList" style="font-size:13px; color: var(--text-dim);">Processing telemetry data...</div>
+        </div>
+        
+        <div class="p-card">
+            <h6><i class="fas fa-th"></i> <span id="lbl_matrixTitle">Live Bed Matrix</span></h6>
+            <div class="room-grid" id="roomMap"></div>
+        </div>
+    </div>
+
+    <div id="residents" class="tab-content p-3 feature-content-view">
+        <div class="d-flex justify-content-between mb-3">
+            <h4 id="lbl_tenantFileTitle"><i class="fas fa-users"></i> Room Wise Tenants File</h4>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModal" id="btn_newIntake">+ New Intake</button>
+        </div>
+        <div id="roomGroupedList"></div>
+    </div>
+
+    <div id="expenses" class="tab-content p-3 feature-content-view">
+        <h4 id="lbl_expTitle"><i class="fas fa-wallet"></i> Accounts & Vendor Accounting Ledger</h4>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="p-card border-danger">
+                    <h6 class="text-danger"><i class="fas fa-minus-circle"></i> <span id="lbl_addExp">Add General Expense (Spend)</span></h6>
+                    <input type="text" id="exName" placeholder="Reason">
+                    <input type="number" id="exAmt" placeholder="Amount ₹">
+                    <button class="btn-action bg-danger border-0" id="btnAddExpense">Log Expense Amount</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-card border-success">
+                    <h6 class="text-success"><i class="fas fa-truck"></i> <span id="lbl_vendorExp">Daily Milk & Grocery Vendor Account</span></h6>
+                    <input type="text" id="vName" placeholder="Vendor Name">
+                    <input type="number" id="vQty" placeholder="Quantity">
+                    <input type="number" id="vRate" placeholder="Rate Per Unit ₹">
+                    <input type="date" id="vDate" style="padding:6px; margin-bottom:12px;">
+                    <button class="btn-action bg-success border-0" id="btnVendor">Log Vendor & Calculate Bill</button>
+                </div>
+            </div>
+        </div>
+        <h6 class="mt-4 mb-2"><i class="fas fa-list"></i> <span id="lbl_expHistory">Expense Transaction History</span></h6>
+        <div id="expenseContainer"></div>
+    </div>
+
+    <div id="foodTab" class="tab-content p-3 feature-content-view">
+        <h4 id="lbl_foodHeading"><i class="fas fa-utensils"></i> Weekly Food Menu & Student Voting Poll</h4>
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <div class="p-card text-center border-success" style="background: #162c22;">
+                    <h6 class="text-success" id="lbl_activeEaters">Active Mess Eaters</h6>
+                    <h3 id="activeEatersCount" class="text-success">0</h3>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="p-card text-center border-danger" style="background: #2d1616;">
+                    <h6 class="text-danger" id="lbl_skippedEaters">Skipped Food (Saved)</h6>
+                    <h3 id="skippedEatersCount" class="text-danger">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="p-card">
+            <h6 id="lbl_setMenu">Set Today's Broadcast Menu</h6>
+            <input type="text" id="foodToday" placeholder="Today's Dish">
+            <button class="btn-action bg-primary border-0" id="btnSaveMenu">Broadcast Menu to WhatsApp</button>
+        </div>
+        <div class="p-card">
+            <h6 id="lbl_feedbackTitle">Current Food Quality Feedback</h6>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span id="lbl_goodFood">😋 Good Food</span><b id="voteGood" class="text-success">0 Votes</b>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span id="lbl_avgFood">😐 Average Food</span><b id="voteAvg" class="text-warning">0 Votes</b>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary w-100" id="btnResetVotes">Reset Poll Records</button>
+        </div>
+    </div>
+
+    <div id="complaintsTab" class="tab-content p-3 feature-content-view">
+        <h4 id="lbl_compHeading"><i class="fas fa-tools"></i> Maintenance Complaints Box</h4>
+        <div class="p-card">
+            <input type="text" id="compRoom" placeholder="Room No">
+            <textarea id="compDesc" placeholder="Issue Details" rows="2"></textarea>
+            <button class="btn-action" id="btnAddComplaint">Log Maintenance Issue</button>
+        </div>
+        <div id="complaintList"></div>
+    </div>
+
+    <div id="settings" class="tab-content p-3 feature-content-view">
+        <h4 id="lbl_settHeading"><i class="fas fa-cog"></i> Advanced Security & Hardware Controls</h4>
+        
+        <div class="p-card border-primary">
+            <h6 class="text-primary"><i class="fas fa-database"></i> <span id="lbl_backupTitle">HUDKO ERP Backup & Restore Center</span></h6>
+            <p class="text-dim" style="font-size:12px;" id="lbl_backupDesc">Export or Import storage data block structures.</p>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-primary w-50" id="btnExportData">Export Data</button>
+                <button class="btn btn-sm btn-outline-info w-50" onclick="document.getElementById('importFile').click()" id="btn_importUi">Import Data</button>
+            </div>
+            <input type="file" id="importFile" style="display:none;">
+        </div>
+
+        <div class="p-card">
+            <h6><span id="lbl_addBranch">Add Multiple Branches</span> <span id="branchLimitBadge" class="badge bg-danger"></span></h6>
+            <input type="text" id="newPgName" placeholder="PG Name">
+            <button class="btn btn-outline-primary w-100" id="btnAddNewPG">+ Add New PG Branch</button>
+        </div>
+        
+        <div class="p-card border-danger">
+            <h6 class="text-danger"><i class="fas fa-ban"></i> <span id="lbl_blTitle">Central Blacklist Network</span></h6>
+            <div class="row g-2">
+                <div class="col-6"><input type="text" id="blName" placeholder="Fraudster Name"></div>
+                <div class="col-6"><input type="text" id="blAadhar" placeholder="ID Security Token"></div>
+                <div class="col-12"><input type="text" id="blReason" placeholder="Reason"></div>
+            </div>
+            <button class="btn btn-danger w-100 btn-sm" id="btnBlacklist">Report Defaulter</button>
+            <div class="mt-3">
+                <h6 class="text-white" style="font-size:13px;"><i class="fas fa-database"></i> <span id="lbl_blHistory">Global Defaulter Database History</span></h6>
+                <div id="blacklistContainer" class="text-danger" style="font-size:12px; list-style-type: none; padding-left: 0;"></div>
+            </div>
+        </div>
+        <button class="btn btn-outline-warning w-100 mt-2" id="btnMasterReset">Format All System Records</button>
+        <button class="btn btn-outline-danger w-100 mt-2" id="btnLogout">Clear Saved Key & Logout</button>
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white" style="border:1px solid #334155;">
+            <div class="modal-body">
+                <h5 class="mb-3 text-primary"><i class="fas fa-user-plus"></i> <span id="lbl_modalTitle">Secure Registration Intake</span> <span id="bedLimitBadge" class="badge bg-warning text-dark"></span></h5>
+                <input type="text" id="tName" placeholder="Tenant Full Name">
+                <input type="text" id="tAadhar" placeholder="ID Card Token">
+                
+                <div class="p-2 mb-2 rounded bg-secondary-subtle" style="font-size:12px;">
+                    <label class="fw-bold mb-1" id="lbl_uploadId"><i class="fas fa-image"></i> Upload ID Proof Photo</label>
+                    <input type="file" id="tPhotoFile" accept="image/*" style="padding:4px; margin:0;">
+                    <img id="modalPreview" class="preview-img" style="display:none;">
+                </div>
+                
+                <input type="text" id="tRoom" placeholder="Room Number">
+
+                <div class="p-2 mb-2 rounded bg-secondary-subtle" style="font-size:12px;">
+                    <label class="fw-bold mb-1" id="lbl_cycleStart"><i class="fas fa-calendar-alt"></i> Rent Cycle Start Date</label>
+                    <input type="date" id="tRentStartDate" style="padding:6px; margin:0;">
+                </div>
+
+                <div class="p-2 mb-2 rounded bg-secondary-subtle" style="font-size:12px;">
+                    <label class="fw-bold mb-1" id="lbl_expectedCheck"><i class="fas fa-hourglass-start"></i> Expected Checkout Date</label>
+                    <input type="date" id="tCheckoutDate" style="padding:6px; margin:0;">
+                </div>
+
+                <input type="number" id="tRent" placeholder="Monthly Base Rent ₹">
+                <input type="number" id="tDeposit" placeholder="Security Deposit ₹">
+                <input type="text" id="tPhone" placeholder="Tenant WhatsApp">
+                <input type="text" id="tParentPhone" placeholder="Parent WhatsApp">
+                
+                <button class="btn-action mt-2" id="btnSaveTenant">Confirm Secure Register</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mobile-nav no-print">
+    <div class="nav-item active" id="navHome" data-target="dashboard"><i class="fas fa-home"></i><br><span id="nav_stats">Stats</span></div>
+    <div class="nav-item" id="navResidents" data-target="residents"><i class="fas fa-users"></i><br><span id="nav_tenants">Tenants</span></div>
+    <div class="nav-item" id="navFood" data-target="foodTab"><i class="fas fa-utensils"></i><br><span id="nav_food">Food Menu</span></div>
+    <div class="nav-item" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fas fa-plus-circle text-primary" style="font-size:26px;"></i></div>
+    <div class="nav-item" id="navExpenses" data-target="expenses"><i class="fas fa-wallet"></i><br><span id="nav_spend">Spend</span></div>
+    <div class="nav-item" id="navComplaints" data-target="complaintsTab"><i class="fas fa-tools"></i><br><span id="nav_complaints">Complaints</span></div>
+    <div class="nav-item" id="navSettings" data-target="settings"><i class="fas fa-cog"></i><br><span id="nav_hardware">Hardware</span></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBE41ujYp8a9wkdAvcZM5SoPPFrzImNdrk",
+      authDomain: "pg-app-software.firebaseapp.com",
+      projectId: "pg-app-software",
+      storageBucket: "pg-app-software.firebasestorage.app",
+      messagingSenderId: "297515252662",
+      appId: "1:297515252662:web:f99698f24a8380589a1f17",
+      databaseURL: "https://pg-app-software-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    let savedKey = localStorage.getItem('hudko_owner_license_key') || null;
+    let activePG = localStorage.getItem('hudko_active_pg') || 'Manipal HQ';
+    let currentLang = localStorage.getItem('hudko_lang') || 'en';
+    let pgData = {};
+    let licenseMeta = null;
+    let globalBlacklistData = {}; 
+    let temporaryPhotoBase64 = "";
+    let cachedGlobalNotice = null;
+
+    const MY_UPI_ID = "9108151310@axl"; 
+    const MY_WHATSAPP_NUMBER = "919480112444"; 
+
+    const FIXED_PLAN_PRICES = {
+        "starter": { name: "Starter Tier Plan", amount: 499.00 },
+        "pro": { name: "Professional ERP Pro", amount: 999.00 },
+        "ultra": { name: "Ultra Enterprise Business", amount: 1499.00 },
+        "premium": { name: "Premium Lifetime Server Node", amount: 1999.00 }
+    };
+
+    const langDictionary = {
+        en: {
+            enterLicense: "Enter your system license ID to unlock the platform console.",
+            btnVerify: "Verify & Open Dashboard",
+            lockTitle: "ACCESS RESTRICTED",
+            lockSub: "SUBSCRIPTION PLAN EXPIRED",
+            lockDesc: "Our enterprise engine detected that your commercial platform license has run its course. Access to the Admin Control Panel and live data streams has been suspended pending renewal.",
+            lockContact: "To resume data-synchronization, contact:",
+            rev: "Rent Revenue", depo: "Deposits Held", spend: "Total Spend", profit: "Net Profit",
+            fineTitle: "Auto-Pilot Rent Due & Late Fine Status",
+            predTitle: "15 Days Expected Checkouts (AI Prediction)",
+            matrixTitle: "Live Bed Matrix",
+            tenantFileTitle: "Room Wise Tenants File", btnNewIntake: "+ New Intake",
+            addExp: "Add General Expense (Spend)", vendorExp: "Daily Milk & Grocery Vendor Account", expHistory: "Expense Transaction History",
+            foodHeading: "Weekly Food Menu & Student Voting Poll", activeEaters: "Active Mess Eaters", skippedEaters: "Skipped Food (Saved)",
+            setMenu: "Set Today's Broadcast Menu", feedbackTitle: "Current Food Quality Feedback",
+            goodFood: "😋 Good Food", avgFood: "😐 Average Food", btnResetPoll: "Reset Poll Records",
+            compHeading: "Maintenance Complaints Box", btnLogIssue: "Log Maintenance Issue",
+            settHeading: "Advanced Security & Hardware Controls", backupTitle: "HUDKO ERP Backup & Restore Center",
+            backupDesc: "Export or Import your critical storage blocks to ensure offline persistence.",
+            addBranch: "Add Multiple Branches", btnAddBranch: "+ Add New PG Branch", blTitle: "Central Blacklist Network",
+            blHistory: "Global Defaulter Database History", btnFormat: "Format All System Records", btnLogout: "Clear Saved Key & Logout",
+            navStats: "Stats", navTenants: "Tenants", navFood: "Food Menu", navSpend: "Spend", navComplaints: "Complaints", navHardware: "Hardware",
+            modalTitle: "Secure Registration Intake", uploadId: "Upload ID Proof Photo", cycleStart: "Rent Cycle Start Date", expectedCheck: "Expected Checkout Date",
+            btnConfirmReg: "Confirm Secure Register", phReason: "Reason (Repairs, Internet etc.)", phAmt: "Amount ₹", phVName: "Vendor Name",
+            phVQty: "Quantity Delivered Today", phVRate: "Rate Per Unit ₹", phDish: "Today's Dish (e.g., Masala Dosa)", phRoom: "Room No",
+            phDesc: "Issue Details", phBlName: "Fraudster Name", phBlAadhar: "ID System Token", phBlReason: "Reason for Blacklist",
+            phTName: "Tenant Full Name", phTAadhar: "ID Security Token", phTRoom: "Room Number", phTRent: "Monthly Base Rent ₹",
+            phTDepo: "Security Deposit ₹", phTPhone: "Tenant WhatsApp", phTParent: "Parent WhatsApp",
+            statusPaid: "Paid", statusUnpaid: "Unpaid", optOut: "Catering Opt-Out", optIn: "Active Catering",
+            noDoc: "No Document Stream Attached",
+            btnCheckout: "Checkout", btnToggleRent: "Toggle Rent Status", btnUtility: "+ Utility Bill", btnCatering: "Catering Toggle",
+            btnReceipt: "Receipt", btnDue: "Due Alert", btnGate: "Gate Alert",
+            liveNoticeTitle: "LIVE GLOBAL BROADCAST NOTICE"
+        },
+        kn: {
+            enterLicense: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ತೆರೆಯಲು ನಿಮ್ಮ ಸಿಸ್ಟಂ ಲೈಸೆನ್ಸ್ ಐಡಿ ನಮೂದಿಸಿ.",
+            btnVerify: "ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಲಾಗ್ ಇನ್ ಮಾಡಿ",
+            lockTitle: "ಪ್ರವೇಶವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ",
+            lockSub: "ಮಂತ್ಲಿ ಸಬ್‌ಸ್ಕ್ರಿಪ್ಷನ್ ಪ್ಲಾನ್ ಅವಧಿ ಮುಗಿದಿದೆ!",
+            lockDesc: "ನಿಮ್ಮ ಮಾಸಿಕ ಲೈಸೆನ್ಸ್ ಅವಧಿ ಮುಗಿದಿರುವುದು ಪತ್ತೆಯಾಗಿದೆ. ಅಡ್ಮಿನ್ ಕಂಟ್ರೋಲ್ ಪ್ಯಾನಲ್ ಮತ್ತು ಲೈವ್ ಡೇಟಾ ಪ್ರವೇಶವನ್ನು ತಾತ್ಕಾಲಿಕವಾಗಿ ನಿಲ್ಲಿಸಲಾಗಿದೆ.",
+            lockContact: "ಸೇವೆಯನ್ನು ಮುಂದುವರಿಸಲು ತಕ್ಷಣ ಸಂಪರ್ಕಿಸಿ:",
+            rev: "ಒಟ್ಟು ಬಾಡಿಗೆ ಆದಾಯ", depo: "ಅಡ್ವಾನ್ಸ್ ಡೆಪಾಸಿಟ್", spend: "ಒಟ್ಟು ಖರ್ಚು", profit: "ನಿವ್ವಳ ಲಾಭ",
+            fineTitle: "ಬಾಡಿಗೆ ಬಾಕಿ ಮತ್ತು ಲೇಟ್ ಫೈನ್ ಸ್ಟೇಟಸ್ ವಿವರ",
+            predTitle: "ಮುಂದಿನ 15 ದಿನಗಳಲ್ಲಿ ಖಾಲಿ ಮಾಡಲಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳು (AI ವಿವರ)",
+            matrixTitle: "ಲೈವ್ ರೂಮ್ ಮ್ಯಾಟ್ರಿಕ್ಸ್",
+            tenantFileTitle: "ರೂಮ್ ವೈಸ್ ಬಾಡಿಗೆದಾರರ ಕಡತಗಳು", btnNewIntake: "+ ಹೊಸ ದಾಖಲಾತಿ",
+            addExp: "ಸಾಮಾನ್ಯ ಖರ್ಚುಗಳನ್ನು ಸೇರಿಸಿ (Spend)", vendorExp: "ದಿನಸಿ ಮತ್ತು ಹಾಲಿನ ವೆಂಡರ್ ಖಾತೆ", expHistory: "ಖರ್ಚು ವೆಚ್ಚಗಳ ಇತಿಹಾಸ (Ledger)",
+            foodHeading: "ವಾರದ ಅಡುಗೆ ಮೆನು ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳ ವೋಟಿಂಗ್ ಪೋಲ್", activeEaters: "ಊಟ ಮಾಡುವವರು", skippedEaters: "ಊಟ ಬೇಡ ಎಂದವರು (ಉಳಿತಾಯ)",
+            setMenu: "ಇಂದಿನ ಅಡುಗೆ ಮೆನು ಅಪ್ಡೇಟ್ ಮಾಡಿ", feedbackTitle: "ಊಟದ ಗುಣಮಟ್ಟದ ಕುರಿತು ವಿದ್ಯಾರ್ಥಿಗಳ ವೋಟಿಂಗ್",
+            goodFood: "😋 ಸೂಪರ್ ಊಟ", avgFood: "😐 ಸಾಧಾರಣ ಊಟ", btnResetPoll: "ವೋಟಿಂಗ್ ರೆಕಾರ್ಡ್ ರಿಸೆಟ್ ಮಾಡಿ",
+            compHeading: "ದುರಸ್ತಿ ಮತ್ತು ದೂರುಗಳ ಪೆಟ್ಟಿಗೆ", btnLogIssue: "ದೂರು ದಾಖಲಿಸಿ",
+            settHeading: "ಸುಧಾರಿತ ಭದ್ರತೆ ಮತ್ತು ಹಾರ್ಡ್‌ವೇರ್ ಕಂಟ್ರೋಲ್", backupTitle: "HUDKO ERP ಡೇಟಾ ಬ್ಯಾಕಪ್ ಕೇಂದ್ರ",
+            backupDesc: "ನಿಮ್ಮ ಮುಖ್ಯ ಡೇಟಾ ಸುರಕ್ಷತೆಗಾಗಿ ಫೈಲ್ ಅನ್ನು ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಅಥವಾ ಇಂಪೋರ್ಟ್ ಮಾಡಿ ಇಟ್ಟುಕೊಳ್ಳಿ.",
+            addBranch: "ಹೊಸ ಬ್ರಾಂಚ್‌ಗಳನ್ನು ಸೇರಿಸಿ", btnAddBranch: "+ ಹೊಸ ಪಿಜಿ ಸೇರಿಸಿ", blTitle: "ಕೇಂದ್ರ ಬ್ಲಾಕ್‌ಲಿಸ್ಟ್ ನೆಟ್‌ವರ್ಕ್",
+            blHistory: "ಗ್ಲೋಬಲ್ ಡಿಫಾಲ್ಟರ್ ಡೇಟಾಬೇಸ್ ಇತಿಹಾಸ", btnFormat: "ಎಲ್ಲಾ ಸಿಸ್ಟಂ ರೆಕಾರ್ಡ್ ಡಿಲೀಟ್ ಮಾಡಿ", btnLogout: "ಖಾತೆಯಿಂದ ಲಾಗ್ ಔಟ್ ಮಾಡಿ",
+            navStats: "ವಿವರಗಳು", navTenants: "ಬಾಡಿಗೆದಾರರು", navFood: "ಅಡುಗೆ ಮೆನು", navSpend: "ಖರ್ಚುಗಳು", navComplaints: "ದೂರುಗಳು", navHardware: "ಹಾರ್ಡ್‌ವೇರ್",
+            modalTitle: "ಹೊಸ ವಿದ್ಯಾರ್ಥಿ ದಾಖಲಾತಿ ಫಾರ್ಮ್", uploadId: "ಐಡಿ ಕಾರ್ಡ್ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ", cycleStart: "ಬಾಡಿಗೆ ಆರಂಭವಾಗುವ ದಿನಾಂಕ", expectedCheck: "ಖಾಲಿ ಮಾಡುವ ಅಂದಾಜು ದಿನಾಂಕ",
+            btnConfirmReg: "ದಾಖಲಾತಿಯನ್ನು ಖಚಿತಪಡಿಸಿ", phReason: "ಖರ್ಚಿನ ವಿವರ", phAmt: "ಮೊತ್ತ ₹", phVName: "ವೆಂಡರ್ ಹೆಸರು",
+            phVQty: "ಇಂದು ತಂದ ಪ್ರಮಾಣ", phVRate: "ಒಂದು ಯೂನಿಟ್ ಬೆಲೆ ₹", phDish: "ಇಂದಿನ ಅಡುಗೆ (ಉದಾ: ಮಸಾಲ ದೋಸೆ)", phRoom: "ರೂಮ್ ಸಂಖ್ಯೆ",
+            phDesc: "ದೂರಿನ ವಿವರ", phBlName: "ಮೋಸಗಾರನ ಹೆಸರು", phBlAadhar: "ಐಡಿ ಕಾರ್ಡ್ ನಂಬರ್", phBlReason: "ಬ್ಲಾಕ್‌ಲಿಸ್ಟ್ ಮಾಡಲು ಕಾರಣ",
+            phTName: "ವಿದ್ಯಾರ್ಥಿಯ ಪೂರ್ಣ ಹೆಸರು", phTAadhar: "ಐಡಿ ಕಾರ್ಡ್ ಸಂಖ್ಯೆ", phTRoom: "ರೂಮ್ ಸಂಖ್ಯೆ", phTRent: "ತಿಂಗಳ ಬಾಡಿಗೆ ₹",
+            phTDepo: "ಮುಂಗಡ ಹಣ (Deposit) ₹", phTPhone: "ವಿದ್ಯಾರ್ಥಿ ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ", phTParent: "ಪೋಷಕರ ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ",
+            statusPaid: "ಪಾವತಿಯಾಗಿದೆ", statusUnpaid: "ಬಾಕಿ ಇದೆ", optOut: "ಊಟ ಬೇಡ ಎಂದಿದ್ದಾರೆ", optIn: "ಊಟ ಮಾಡುತ್ತಿದ್ದಾರೆ",
+            noDoc: "ಯಾವುದೇ ಐಡಿ ದಾಖಲೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ",
+            btnCheckout: "ಖಾಲಿ ಮಾಡಿಸು", btnToggleRent: "ಬಾಡಿಗೆ ಸ್ಥಿತಿ ಬದಲಾಯಿಸಿ", btnUtility: "+ ಕರೆಂಟ್ ಬಿಲ್", btnCatering: "ಊಟದ ಸ್ಥಿತಿ ಬದಲಾಯಿಸಿ",
+            btnReceipt: "ರಸೀದಿ ಕಳುಹಿಸಿ", btnDue: "ಬಾಕಿ அலರ್ಟ್", btnGate: "ಗೇಟ್ அலರ್ಟ್",
+            liveNoticeTitle: "ಲೈವ್ ಅಡ್ಮಿನ್ ಅಧಿಕೃತ ಪ್ರಕಟಣೆ (NOTICE BOARD)"
+        }
+    };
+
+    function applyLanguageUI() {
+        const dict = langDictionary[currentLang];
+        if(!dict) return;
+
+        document.getElementById('lbl_enterLicense').innerText = dict.enterLicense;
+        document.getElementById('btnVerifyLicense').innerText = dict.btnVerify;
+        document.getElementById('lbl_lockTitle').innerText = dict.lockTitle;
+        document.getElementById('lbl_lockSub').innerText = dict.lockSub;
+        document.getElementById('lbl_lockDesc').innerText = dict.lockDesc;
+        document.getElementById('lbl_lockContact').innerText = dict.lockContact;
+        
+        document.getElementById('lbl_rev').innerText = dict.rev;
+        document.getElementById('lbl_depo').innerText = dict.depo;
+        document.getElementById('lbl_spend').innerText = dict.spend;
+        document.getElementById('lbl_profit').innerText = dict.profit;
+
+        document.getElementById('lbl_fineTitle').innerText = dict.fineTitle;
+        document.getElementById('lbl_predTitle').innerText = dict.predTitle;
+        document.getElementById('lbl_matrixTitle').innerText = dict.matrixTitle;
+        document.getElementById('lbl_tenantFileTitle').innerHTML = `<i class="fas fa-users"></i> ` + dict.tenantFileTitle;
+        document.getElementById('btn_newIntake').innerText = dict.btnNewIntake;
+
+        document.getElementById('lbl_expTitle').innerHTML = `<i class="fas fa-wallet"></i> ` + dict.expTitle;
+        document.getElementById('lbl_addExp').innerText = dict.addExp;
+        document.getElementById('lbl_vendorExp').innerText = dict.vendorExp;
+        document.getElementById('lbl_expHistory').innerText = dict.expHistory;
+        document.getElementById('btnAddExpense').innerText = dict.addExp; 
+        document.getElementById('btnVendor').innerText = dict.vendorExp; 
+
+        document.getElementById('lbl_foodHeading').innerHTML = `<i class="fas fa-utensils"></i> ` + dict.foodHeading;
+        document.getElementById('lbl_activeEaters').innerText = dict.activeEaters;
+        document.getElementById('lbl_skippedEaters').innerText = dict.skippedEaters;
+        document.getElementById('lbl_setMenu').innerText = dict.setMenu;
+        document.getElementById('btnSaveMenu').innerText = dict.setMenu; 
+        document.getElementById('lbl_feedbackTitle').innerText = dict.feedbackTitle;
+        document.getElementById('lbl_goodFood').innerText = dict.goodFood;
+        document.getElementById('lbl_avgFood').innerText = dict.avgFood;
+        document.getElementById('btnResetVotes').innerText = dict.btnResetPoll;
+
+        document.getElementById('lbl_compHeading').innerHTML = `<i class="fas fa-tools"></i> ` + dict.compHeading;
+        document.getElementById('btnAddComplaint').innerText = dict.btnLogIssue;
+        document.getElementById('lbl_settHeading').innerHTML = `<i class="fas fa-cog"></i> ` + dict.settHeading;
+        document.getElementById('lbl_backupTitle').innerText = dict.backupTitle;
+        document.getElementById('lbl_backupDesc').innerText = dict.backupDesc;
+        document.getElementById('btnExportData').innerText = "Export Data"; 
+        document.getElementById('btn_importUi').innerText = "Import Data"; 
+        document.getElementById('lbl_addBranch').innerText = dict.addBranch;
+        document.getElementById('btnAddNewPG').innerText = dict.btnAddBranch;
+        document.getElementById('lbl_blTitle').innerText = dict.blTitle;
+        document.getElementById('btnBlacklist').innerText = "Report Defaulter"; 
+        document.getElementById('lbl_blHistory').innerText = dict.blHistory;
+        document.getElementById('btnMasterReset').innerText = dict.btnFormat;
+        document.getElementById('btnLogout').innerText = dict.btnLogout;
+
+        document.getElementById('nav_stats').innerText = dict.navStats;
+        document.getElementById('nav_tenants').innerText = dict.navTenants;
+        document.getElementById('nav_food').innerText = dict.navFood;
+        document.getElementById('nav_spend').innerText = dict.navSpend;
+        document.getElementById('nav_complaints').innerText = dict.navComplaints;
+        document.getElementById('nav_hardware').innerText = dict.navHardware;
+
+        document.getElementById('lbl_modalTitle').innerText = dict.modalTitle;
+        document.getElementById('lbl_uploadId').innerHTML = `<i class="fas fa-image"></i> ` + dict.uploadId;
+        document.getElementById('lbl_cycleStart').innerHTML = `<i class="fas fa-calendar-alt"></i> ` + dict.cycleStart;
+        document.getElementById('lbl_expectedCheck').innerHTML = `<i class="fas fa-hourglass-start"></i> ` + dict.expectedCheck;
+        document.getElementById('btnSaveTenant').innerText = dict.btnConfirmReg;
+
+        document.getElementById('lbl_liveNoticeTitle').innerText = dict.liveNoticeTitle;
+
+        document.getElementById('exName').placeholder = dict.phReason;
+        document.getElementById('exAmt').placeholder = dict.phAmt;
+        document.getElementById('vName').placeholder = dict.phVName;
+        document.getElementById('vQty').placeholder = dict.phVQty;
+        document.getElementById('vRate').placeholder = dict.phVRate;
+        document.getElementById('foodToday').placeholder = dict.phDish;
+        document.getElementById('compRoom').placeholder = dict.phRoom;
+        document.getElementById('compDesc').placeholder = dict.phDesc;
+        document.getElementById('blName').placeholder = dict.phBlName;
+        document.getElementById('blAadhar').placeholder = dict.phBlAadhar;
+        document.getElementById('blReason').placeholder = dict.phBlReason;
+        document.getElementById('tName').placeholder = dict.phTName;
+        document.getElementById('tAadhar').placeholder = dict.phTAadhar;
+        document.getElementById('tRoom').placeholder = dict.phTRoom;
+        document.getElementById('tRent').placeholder = dict.phTRent;
+        document.getElementById('tDeposit').placeholder = dict.phTDepo;
+        document.getElementById('tPhone').placeholder = dict.phTPhone;
+        document.getElementById('tParentPhone').placeholder = dict.phTParent;
+        document.getElementById('newPgName').placeholder = dict.phTRoom;
+    }
+
+    // --- BOTTOM NAVIGATION EVENT TRIGGER ---
+    document.querySelectorAll('.mobile-nav .nav-item[data-target]').forEach(item => {
+        item.addEventListener('click', function() {
+            const targetTabId = this.getAttribute('data-target');
+            if(!targetTabId) return;
+
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active-tab');
+            });
+
+            const targetTab = document.getElementById(targetTabId);
+            if(targetTab) targetTab.classList.add('active-tab');
+
+            document.querySelectorAll('.mobile-nav .nav-item').forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    document.getElementById('langSwitcher').value = currentLang;
+    document.getElementById('langSwitcher').addEventListener('change', (e) => {
+        currentLang = e.target.value;
+        localStorage.setItem('hudko_lang', currentLang);
+        applyLanguageUI();
+        if(pgData && pgData[activePG]) renderAll();
+    });
+
+    // --- 💥 CRITICAL FIX: PG SWITCHER AUTO RE-LOAD LISTENER 💥 ---
+    document.getElementById('pgSwitcher').addEventListener('change', (e) => {
+        activePG = e.target.value;
+        localStorage.setItem('hudko_active_pg', activePG);
+        renderAll(); 
+    });
+
+    window.toggleRent = function(id) {
+        if(!pgData[activePG] || !pgData[activePG].tenants) return;
+        const t = pgData[activePG].tenants.find(x => x.id === id);
+        if(t) { t.paidStatus = t.paidStatus === 'Paid' ? 'Unpaid' : 'Paid'; dbSave(); }
+    };
+
+    window.toggleMessSkip = function(id) {
+        if(!pgData[activePG] || !pgData[activePG].tenants) return;
+        const t = pgData[activePG].tenants.find(x => x.id === id);
+        if(t) { t.foodSkip = !t.foodSkip; dbSave(); }
+    };
+
+    window.chargePowerBill = function(id) {
+        if(!pgData[activePG] || !pgData[activePG].tenants) return;
+        const units = prompt(currentLang === 'kn' ? "ಬಳಕೆಯಾದ ಕರೆಂಟ್ ಯೂನಿಟ್ ನಮೂದಿಸಿ (1 ಯೂನಿಟ್ = ₹10):" : "Enter Power Units Consumed (1 unit = ₹10):");
+        if(!units || isNaN(units)) return;
+        const t = pgData[activePG].tenants.find(x => x.id === id);
+        if(t) { t.currentBillDues = (t.currentBillDues || 0) + (parseInt(units) * 10); t.paidStatus = 'Unpaid'; dbSave(); }
+    };
+
+    window.sendWhatsAppReceipt = function(id, type) {
+        if(!pgData[activePG] || !pgData[activePG].tenants) return;
+        const t = pgData[activePG].tenants.find(x => x.id === id);
+        if(!t || !t.phone) return alert("System Error: Contact missing!");
+        
+        let rentAmt = t.rent || 0;
+        let powerAmt = t.currentBillDues || 0;
+        let totalRentAmount = rentAmt + powerAmt;
+        let msg = "";
+
+        if (currentLang === 'kn') {
+            if (type === 'alert') {
+                msg = `⚠️ *HUDKO ERP - ಅಧಿಕೃತ ಬಾಕಿ ಪಾವತಿ ಸೂಚನೆ*\n\n` +
+                      `ಗೌರವಾನ್ವಿತ ನಿವಾಸಿಗಳಾದ (*${t.name}*),\n` +
+                      `ನಿಮ್ಮ **${activePG}** ನ ಬಾಕಿ ಹಣದ ಪಾವತಿಗಾಗಿ ಈ ಸ್ವಯಂಚಾಲಿತ ಸೂಚನೆಯನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ.\n\n` +
+                      `*📍 ಬಾಕಿ ವಿವರಗಳು:*\n` +
+                      `• ರೂಮ್ ಸಂಖ್ಯೆ: Room ${t.room}\n` +
+                      `• ಮೂಲ ಬಾಡಿಗೆ: ₹${rentAmt}\n` +
+                      `• ವಿದ್ಯುತ್/ಇತರ ಶುಲ್ಕಗಳು: ₹${powerAmt}\n` +
+                      `• ಒಟ್ಟು ಪಾವತಿಸಬೇಕಾದ ಬಾಕಿ ಮೊತ್ತ: *₹${totalRentAmount}*\n\n` +
+                      `ಯಾವುದೇ ನೆಟ್‌ವರ್ಕ್ ಬ್ಲಾಕ್ ಅಥವಾ ತೊಂದರೆಗಳನ್ನು ತಪ್ಪಿಸಲು ದಯವಿಟ್ಟು ತಕ್ಷಣವೇ ನಿಮ್ಮ ಬಾಕಿಯನ್ನು ಪಾವತಿಸಿ.\n\n` +
+                      `_ವಂದನೆಗಳೊಂದಿಗೆ,_\n` +
+                      `*ಅಕೌಂಟ್ಸ್ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್ ಡೆಸ್ಕ್*`;
+            } else {
+                msg = `✅ *HUDKO ERP - ಡಿಜಿಟಲ್ ಪಾವತಿ ರಸೀದಿ*\n\n` +
+                      `ಗೌರವಾನ್ವಿತ ನಿವಾಸಿಗಳಾದ (*${t.name}*),\n` +
+                      `ನಿಮ್ಮ **${activePG}** ನ ಖಾತೆ ಪಾವತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ.\n\n` +
+                      `*🧾 ಟ್ರಾನ್ಸಾಕ್ಷನ್ ಮೆಮೊ:*\n` +
+                      `• ಸ್ಥಳ: Room ${t.room}\n` +
+                      `• ಖಾತೆ ವಿವರ: ಕೋಣೆ ಬಾಡಿಗೆ ಮತ್ತು ವಿದ್ಯುತ್ ಶುಲ್ಕ\n` +
+                      `• ಪಾವತಿಸಿದ ಒಟ್ಟು ಮೊತ್ತ: *₹${totalRentAmount}*\n  ` +
+                      `• ಸ್ಟೇಟಸ್: *ಯಶಸ್ವಿಯಾಗಿದೆ / SUCCESS*\n\n` +
+                      `ಸಮಯಕ್ಕೆ ಸರಿಯಾಗಿ ಪಾವತಿಸಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು.\n\n` +
+                      `_ವಂದನೆಗಳೊಂದಿಗೆ,_\n` +
+                      `*ಮ್ಯಾನೇಜ್‌ಮೆಂಟ್ ಡೆಸ್ಕ್*`;
+            }
+        } else {
+            if (type === 'alert') {
+                msg = `⚠️ *HUDKO ERP - OFFICIAL OUTSTANDING DUE NOTICE*\n\n` +
+                      `Dear Resident (*${t.name}*),\n` +
+                      `This is an automated system notification regarding your pending dues for **${activePG}**.\n\n` +
+                      `*📍 BREAKDOWN DETAILS:*\n` +
+                      `• Room / Unit: Room ${t.room}\n` +
+                      `• Base Room Rent: ₹${rentAmt}\n` +
+                      `• Electricity/Utility Charges: ₹${powerAmt}\n` +
+                      `• Total Payable Outstanding: *₹${totalRentAmount}*\n\n` +
+                      `Kindly clear your outstanding balances immediately to avoid bandwidth throttling or temporary network lock.\n\n` +
+                      `_Regards,_\n` +
+                      `*Accounts & Billing Desk*`;
+            } else {
+                msg = `✅ *HUDKO ERP - DIGITAL PAYMENT RECEIPT*\n\n` +
+                      `Dear Resident (*${t.name}*),\n` +
+                      ` We have successfully processed and settled your account statements for **${activePG}**.\n\n` +
+                      `*🧾 TRANSACTION MEMO:*\n` +
+                      `• Location: Room ${t.room}\n` +
+                      `• Account Cleared: Room Rent & Utilities\n` +
+                      `• Amount Remitted: *₹${totalRentAmount}*\n  ` +
+                      `• Transaction Status: *SUCCESS / SETTLED*\n\n` +
+                      `Thank you for your timely remittance.\n\n` +
+                      `_Regards,_\n` +
+                      `*Management Desk*`;
+            }
+        }
+
+        window.open(`https://api.whatsapp.com/send?phone=${t.phone}&text=${encodeURIComponent(msg)}`, '_blank');
+    };
+
+    window.triggerBiometricSim = function(id) {
+        if(!pgData[activePG] || !pgData[activePG].tenants) return;
+        const t = pgData[activePG].tenants.find(x => x.id === id);
+        if(!t || !t.parentPhone) return alert("System Error: Guardian contact details missing!");
+        
+        let msg = "";
+        if (currentLang === 'kn') {
+            msg = `🚨 *HUDKO ಸೆಕ್ಯುರಿಟಿ ಗೇಟ್‌ವೇ - ಕ್ಯಾಂಪಸ್ ಎಂಟ್ರಿ அலರ್ಟ್*\n\n` +
+                  `ಗೌರವಾನ್ವಿತ ಪೋಷಕರೇ/ಪಾಲಕರೇ,\n` +
+                  `ಇದು ನಿಮ್ಮ ಮಗ/ಮಗಳ ಕುರಿತು **${activePG}** ನಿಂದ ಕಳುಹಿಸಲಾದ ನೈಜ-ಸಮಯದ ಸುರಕ್ಷತಾ ಲಾಗ್ ಆಗಿದೆ.\n\n` +
+                  `*🔒 ಸೆಕ್ಯುರಿಟಿ ಮಾಹಿತಿ:*\n` +
+                  `• ವಿದ್ಯಾರ್ಥಿಯ ಹೆಸರು: *${t.name}*\n` +
+                  `• ನಿಗದಿಪಡಿಸಿದ ಕೋಣೆ: Unit ${t.room}\n` +
+                  `• ಸುರಕ್ಷತಾ ಸ್ಥಿತಿ: *ಗೈರುಹಾಜರಿ / CURFEW TIMEOUT ALERT*\n` +
+                  `• ದಾಖಲಾದ ಸಮಯ: ${new Date().toLocaleDateString()} | ${new Date().toLocaleTimeString()}\n\n` +
+                  `ನಿಗದಿತ ಗೇಟ್ ಲಾಕ್ ಸಮಯ ಮುಗಿದರೂ ವಿದ್ಯಾರ್ಥಿಯು ಬಯೋಮೆಟ್ರಿಕ್ ಗೇಟ್‌ವೇ ಮೂಲಕ ತಮ್ಮ ಹಾಜರಾತಿಯನ್ನು ದಾಖಲಿಸಿಲ್ಲ.\n\n` +
+                  `_ವಂದನೆಗಳೊಂದಿಗೆ,_\n` +
+                  `*ಕೇಂದ್ರ ಭದ್ರತಾ ನಿಯಂತ್ರಣ ಕೊಠಡಿ*`;
+        } else {
+            msg = `🚨 *HUDKO SECURITY GATEWAY - CAMPUS ENTRY ALERT*\n\n` +
+                  `Dear Parent/Guardian,\n` +
+                  `This is a real-time security log transmission from **${activePG}** regarding your ward.\n\n` +
+                  `*🔒 SECURITY TELEMETRY:*\n` +
+                  `• Resident Name: *${t.name}*\n` +
+                  `• Assigned Room: Unit ${t.room}\n` +
+                  `• System Event Status: *ABSENT / CURFEW TIMEOUT ALERT*\n` +
+                  `• Timestamp Logged: ${new Date().toLocaleDateString()} | ${new Date().toLocaleTimeString()}\n\n` +
+                  `The resident has not registered their campus presence via the biometric gateway post the scheduled lock-in time.\n\n` +
+                  `_Regards,_\n` +
+                  `*Central Security Control Room*`;
+        }
+
+        window.open(`https://api.whatsapp.com/send?phone=${t.parentPhone}&text=${encodeURIComponent(msg)}`, '_blank');
+    };
+
+    document.getElementById('btnDeleteGlobalNotice').addEventListener('click', () => {
+        if(confirm("Are you sure you want to delete and clear this global notice from all screens?")) {
+            set(ref(database, 'global_settings/broadcast'), null).then(() => {
+                alert("✅ Global notice successfully deleted.");
+            }).catch((err) => {
+                alert("Error deleting notice: " + err.message);
+            });
+        }
+    });
+
+    window.removeT = function(id) {
+        if(!pgData[activePG] || !pgData[activePG].tenants) return;
+        const confText = currentLang === 'kn' ? "ಖಾಲಿ ಮಾಡಿಸಲು ಬಯಸುವಿರಾ?" : "Confirm checkout?";
+        if(confirm(confText)) {
+            pgData[activePG].tenants = pgData[activePG].tenants.filter(x => x.id !== id);
+            dbSave();
+        }
+    };
+
+    window.unblockAadhar = function(aadharKey) {
+        if(confirm("Purge record from central hub?")) {
+            remove(ref(database, 'global_blacklist/' + aadharKey)).then(() => {
+                alert("✅ Purged successfully.");
+            });
+        }
+    };
+
+    window.resolveComplaint = function(i) {
+        if(!pgData[activePG] || !pgData[activePG].complaints) return;
+        pgData[activePG].complaints[i].status = 'Resolved';
+        dbSave();
+    };
+
+    document.getElementById('btnVerifyLicense').addEventListener('click', () => {
+        const key = document.getElementById('activationKeyInput').value.trim();
+        if(!key) return alert("System Error: License ID cannot be empty!");
+        
+        get(child(ref(database), 'owners/' + key + '/license')).then((snapshot) => {
+            if(snapshot.val()) { 
+                localStorage.setItem('hudko_owner_license_key', key); 
+                savedKey = key; 
+                initSystemSync(); 
+            } else { 
+                alert("❌ Invalid license security credentials!"); 
+            }
+        });
+    });
+
+    function initSystemSync() {
+        if(!savedKey) return;
+        applyLanguageUI();
+        
+        onValue(ref(database, 'global_blacklist'), (snapshot) => {
+            globalBlacklistData = snapshot.val() || {};
+            if(pgData && pgData[activePG]) renderAll();
+        });
+
+        onValue(ref(database, 'global_settings/broadcast'), (snapshot) => {
+            cachedGlobalNotice = snapshot.val();
+            if(pgData && pgData[activePG]) renderAll();
+        });
+
+        onValue(ref(database, 'owners/' + savedKey), (snapshot) => {
+            const data = snapshot.val(); 
+            if(!data || !data.license) return logoutLicense();
+            
+            licenseMeta = data.license;
+
+            if(licenseMeta.status === "Locked") {
+                const ownerPlanId = (licenseMeta.planId || "starter").toLowerCase();
+                const activePlanObject = FIXED_PLAN_PRICES[ownerPlanId] || FIXED_PLAN_PRICES["starter"];
+                
+                document.getElementById('lockPlanName').innerText = activePlanObject.name;
+                document.getElementById('lockPlanAmount').innerText = "₹" + activePlanObject.amount.toFixed(2);
+
+                const myEncodedName = encodeURIComponent(licenseMeta.ownerName || "Nitesh Kumar");
+                const upiLink = `upi://pay?pa=${MY_UPI_ID}&pn=${myEncodedName}&am=${activePlanObject.amount}&cu=INR`;
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+                
+                document.getElementById('upiQrCodeImg').src = qrUrl;
+                document.getElementById('directPayBtn').href = upiLink;
+                
+                const wsMsg = encodeURIComponent(`Hi Nitesh Kumar, completed renewal payment of ₹${activePlanObject.amount} for plan: ${activePlanObject.name} (Key: ${savedKey}). Please verify screenshot.`);
+                document.getElementById('whatsappScreenshotBtn').href = `https://api.whatsapp.com/send?phone=${MY_WHATSAPP_NUMBER}&text=${wsMsg}`;
+
+                document.getElementById('lockScreen').style.display = 'flex';
+                document.getElementById('mainAppContent').style.display = 'none';
+                document.getElementById('activationScreen').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('lockScreen').style.display = 'none';
+            document.getElementById('activationScreen').style.display = 'none';
+            document.getElementById('mainAppContent').style.display = 'block';
+            document.getElementById('brandText').innerHTML = `<i class="fas fa-bolt text-primary"></i> ${licenseMeta.ownerName}`;
+            
+            let backendData = data.appData || {};
+            
+            if (licenseMeta && licenseMeta.planId === 'starter') {
+                const branches = Object.keys(backendData);
+                if (branches.length > 1) {
+                    pgData = {};
+                    const allowedBranch = branches[0];
+                    pgData[allowedBranch] = backendData[allowedBranch];
+                    activePG = allowedBranch;
+                } else {
+                    pgData = backendData;
+                }
+            } else {
+                pgData = backendData;
+            }
+            
+            if(Object.keys(pgData).length === 0) {
+                pgData[activePG] = { tenants: [], expenses: [], complaints: [], menu: "", votes: {good: 0, avg: 0} };
+            }
+            if(!pgData[activePG]) {
+                activePG = Object.keys(pgData)[0] || 'Manipal HQ';
+            }
+
+            // --- ⚙️ DYNAMIC MULTI-OWNER MULTI-BRANCH SELECT DROPDOWN SYNC ⚙️ ---
+            const sw = document.getElementById('pgSwitcher'); 
+            sw.innerHTML = '';
+            let allRegisteredBranches = Object.keys(pgData);
+            
+            if (licenseMeta && licenseMeta.planId === 'starter') {
+                allRegisteredBranches = [allRegisteredBranches[0]]; 
+            }
+
+            allRegisteredBranches.forEach(pg => { 
+                sw.innerHTML += `<option value="${pg}" ${pg === activePG ? 'selected' : ''}>${pg}</option>`; 
+            });
+            
+            renderAll();
+        });
+    }
+
+    function dbSave() { 
+        if(savedKey && pgData) { 
+            if(licenseMeta && licenseMeta.planId === 'starter' && Object.keys(pgData).length > 1) {
+                const keepKey = Object.keys(pgData)[0];
+                const restrictedData = {};
+                restrictedData[keepKey] = pgData[keepKey];
+                set(ref(database, 'owners/' + savedKey + '/appData'), restrictedData);
+                return;
+            }
+            set(ref(database, 'owners/' + savedKey + '/appData'), pgData);
+            localStorage.setItem('hudko_active_pg', activePG); 
+        } 
+    }
+
+    function cleanWhatsAppNumber(phoneStr) {
+        if (!phoneStr) return "";
+        let cleaned = phoneStr.toString().replace(/\D/g, ''); 
+        if (cleaned.length === 10) cleaned = "91" + cleaned;
+        return cleaned;
+    }
+
+    document.getElementById('tPhotoFile').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const imgNode = new Image(); 
+                imgNode.src = evt.target.result;
+                imgNode.onload = function() {
+                    const canvas = document.createElement('canvas'); 
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 120; canvas.height = 120; 
+                    ctx.drawImage(imgNode, 0, 0, 120, 120);
+                    temporaryPhotoBase64 = canvas.toDataURL('image/jpeg', 0.3);
+                    document.getElementById('modalPreview').src = temporaryPhotoBase64;
+                    document.getElementById('modalPreview').style.display = 'block';
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('btnSaveTenant').addEventListener('click', () => {
+        const aadhar = document.getElementById('tAadhar').value.trim();
+        if(aadhar) {
+            const matchedKey = Object.keys(globalBlacklistData).find(k => globalBlacklistData[k].aadhar === aadhar);
+            if(matchedKey) return alert("🚨 Access Denied: Flagged by firewall blacklist.");
+        }
+
+        let currentTotalTenants = 0;
+        Object.keys(pgData).forEach(k => {
+            if(pgData[k].tenants) currentTotalTenants += pgData[k].tenants.length;
+        });
+
+        if(licenseMeta && currentTotalTenants >= licenseMeta.bedLimit) {
+            return alert(`🚨 LICENSE ERROR: Bed registration ceiling reached!`);
+        }
+
+        const name = document.getElementById('tName').value;
+        const room = document.getElementById('tRoom').value;
+        if(!name || !room) return alert("Validation Error!");
+
+        const baseRentAmount = parseInt(document.getElementById('tRent').value) || 0;
+        const t = {
+            id: 'T_' + Date.now(),
+            name, aadhar, photoData: temporaryPhotoBase64 || "", room,
+            rentStartDate: document.getElementById('tRentStartDate').value || new Date().toISOString().split('T')[0],
+            checkoutDate: document.getElementById('tCheckoutDate').value || "",
+            rent: baseRentAmount, currentBillDues: 0,
+            deposit: parseInt(document.getElementById('tDeposit').value) || 0,
+            phone: cleanWhatsAppNumber(document.getElementById('tPhone').value),
+            parentPhone: cleanWhatsAppNumber(document.getElementById('tParentPhone').value),
+            paidStatus: 'Paid', foodSkip: false, regDate: new Date().toLocaleDateString()
+        };
+
+        if(!pgData[activePG].tenants) pgData[activePG].tenants = [];
+        pgData[activePG].tenants.push(t);
+        temporaryPhotoBase64 = "";
+        document.getElementById('modalPreview').style.display = 'none';
+        dbSave();
+        bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
+    });
+
+    document.getElementById('btnSaveMenu').addEventListener('click', () => {
+        const dish = document.getElementById('foodToday').value;
+        if(!dish) return alert("Payload Empty!");
+        pgData[activePG].menu = dish; dbSave();
+        
+        let msg = currentLang === 'kn' ? `📢 *ಅಡುಗೆ ಮೆನು ಅಪ್ಡೇಟ್*: ${dish}` : `📢 *CULINARY MENU*: ${dish}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    });
+
+    document.getElementById('btnResetVotes').addEventListener('click', () => {
+        if(!pgData[activePG]) return;
+        pgData[activePG].votes = {good:0, avg:0}; dbSave();
+    });
+
+    document.getElementById('btnAddExpense').addEventListener('click', () => {
+        const title = document.getElementById('exName').value; const amt = parseInt(document.getElementById('exAmt').value);
+        if(title && amt) {
+            if(!pgData[activePG].expenses) pgData[activePG].expenses = [];
+            pgData[activePG].expenses.unshift({title, amt, date: new Date().toLocaleDateString()});
+            document.getElementById('exName').value = ''; document.getElementById('exAmt').value = '';
+            dbSave();
+        }
+    });
+
+    document.getElementById('btnVendor').addEventListener('click', () => {
+        const name = document.getElementById('vName').value; 
+        const qty = parseInt(document.getElementById('vQty').value); 
+        const rate = parseInt(document.getElementById('vRate').value);
+        let selectedDate = document.getElementById('vDate').value;
+        
+        if(!selectedDate) {
+            selectedDate = new Date().toLocaleDateString();
+        } else {
+            selectedDate = new Date(selectedDate).toLocaleDateString();
+        }
+
+        if(name && qty && rate) {
+            if(!pgData[activePG].expenses) pgData[activePG].expenses = [];
+            pgData[activePG].expenses.unshift({title: `Vendor: ${name} (x${qty})`, amt: (qty*rate), date: selectedDate});
+            document.getElementById('vName').value = ''; document.getElementById('vQty').value = ''; document.getElementById('vRate').value = ''; document.getElementById('vDate').value = '';
+            dbSave();
+        }
+    });
+
+    document.getElementById('btnAddComplaint').addEventListener('click', () => {
+        const room = document.getElementById('compRoom').value; const desc = document.getElementById('compDesc').value;
+        if(room && desc) {
+            if(!pgData[activePG].complaints) pgData[activePG].complaints = [];
+            pgData[activePG].complaints.unshift({room, desc, status: 'Pending'});
+            document.getElementById('compRoom').value = ''; document.getElementById('compDesc').value = '';
+            dbSave();
+        }
+    });
+
+    // --- 🏢 ADD NEW BRANCH LINK EVENT LISTENER 🏢 ---
+    document.getElementById('btnAddNewPG').addEventListener('click', () => {
+        const newName = document.getElementById('newPgName').value.trim();
+        if(!newName) return alert("Branch name cannot be empty!");
+        
+        if(licenseMeta && licenseMeta.planId === 'starter' && Object.keys(pgData).length >= 1) {
+            return alert("🚨 Starter Plan is limited to 1 PG Branch only!");
+        }
+        if(pgData[newName]) return alert("Branch already exists!");
+
+        pgData[newName] = { tenants: [], expenses: [], complaints: [], menu: "", votes: {good: 0, avg: 0} };
+        activePG = newName;
+        document.getElementById('newPgName').value = '';
+        dbSave();
+        alert(`✅ ${newName} Branch Synchronized Successfully!`);
+    });
+
+    document.getElementById('btnBlacklist').addEventListener('click', () => {
+        const name = document.getElementById('blName').value.trim(); 
+        const aadhar = document.getElementById('blAadhar').value.trim(); 
+        const reason = document.getElementById('blReason').value.trim() || "No logs provided";
+        if(name && aadhar) {
+            const bKey = 'BL_' + aadhar;
+            const blacklistPayload = {
+                name, aadhar, reason, 
+                reportedByPG: activePG + ` (${licenseMeta ? licenseMeta.ownerName : 'Owner'})`, 
+                blockedByOwner: savedKey,
+                date: new Date().toLocaleDateString()
+            };
+            set(ref(database, 'global_blacklist/' + bKey), blacklistPayload).then(() => {
+                document.getElementById('blName').value = ''; document.getElementById('blAadhar').value = ''; document.getElementById('blReason').value = '';
+                alert("✅ Blacklist synchronized.");
+            });
+        }
+    });
+
+    document.getElementById('btnExportData').addEventListener('click', () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pgData));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `HUDKO_BACKUP.json`);
+        document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
+    });
+
+    document.getElementById('btnMasterReset').addEventListener('click', () => {
+        const conf = confirm("🚨 Are you absolutely sure you want to format ALL records for this multi-owner account?");
+        if(conf) {
+            const pin = prompt("Enter PIN:");
+            if(pin === "1234") {
+                set(ref(database, 'owners/' + savedKey + '/appData'), null).then(() => {
+                    localStorage.clear(); location.reload();
+                });
+            } else {
+                alert("❌ Incorrect security PIN!");
+            }
+        }
+    });
+
+    function logoutLicense() { localStorage.clear(); location.reload(); }
+    document.getElementById('btnLogout').addEventListener('click', logoutLicense);
+
+    function renderAll() {
+        const dict = langDictionary[currentLang];
+        const cur = pgData[activePG] || { tenants: [], expenses: [], complaints: [], menu: "", votes: {good:0, avg:0} };
+        if(!cur.tenants) cur.tenants = []; if(!cur.expenses) cur.expenses = []; if(!cur.complaints) cur.complaints = []; if(!cur.votes) cur.votes = {good:0, avg:0};
+
+        document.getElementById('activePGTitle').innerText = activePG;
+        document.getElementById('voteGood').innerText = (cur.votes.good || 0) + " " + (currentLang==='kn'?'ಮತಗಳು':'Votes');
+        document.getElementById('voteAvg').innerText = (cur.votes.avg || 0) + " " + (currentLang==='kn'?'ಮತಗಳು':'Votes');
+        
+        document.getElementById('bedLimitBadge').innerText = (currentLang==='kn'?'ಲಿಮಿಟ್: ':'Limit: ') + `${licenseMeta ? licenseMeta.bedLimit : 30}`;
+        document.getElementById('branchLimitBadge').innerText = licenseMeta && licenseMeta.planId === 'starter' ? "Starter (1 PG)" : "Pro Unlocked";
+
+        const displayBox = document.getElementById('globalNoticeDisplayBox');
+        if (cachedGlobalNotice && cachedGlobalNotice.text) {
+            document.getElementById('liveNoticeContentText').innerText = cachedGlobalNotice.text;
+            document.getElementById('liveNoticeMetaText').innerText = `${currentLang === 'kn' ? 'ಸಮಯ' : 'Time'}: ${cachedGlobalNotice.timestamp}`;
+            displayBox.style.display = 'block';
+        } else {
+            displayBox.style.display = 'none';
+        }
+
+        let activeEaters = 0, skippedEaters = 0, fineAlertsHtml = "";
+        const today = new Date();
+
+        cur.tenants.forEach(t => {
+            if(t.foodSkip) skippedEaters++; else activeEaters++;
+            
+            if(t.paidStatus === 'Unpaid') {
+                let currentDues = (t.rent || 0) + (t.currentBillDues || 0);
+                fineAlertsHtml += `<div class='text-warning mb-1'>⚠️ Room ${t.room} : ${t.name} - ₹${currentDues} ${currentLang==='kn'?'ಬಾಕಿ ಇದೆ.':'Overdue.'}</div>`;
+            }
+        });
+
+        document.getElementById('activeEatersCount').innerText = activeEaters;
+        document.getElementById('skippedEatersCount').innerText = skippedEaters;
+        document.getElementById('autoFineStatusList').innerHTML = fineAlertsHtml || (currentLang === 'kn' ? "ಎಲ್ಲಾ ಖಾತೆಗಳು ಸರಿಯಾಗಿವೆ." : "All accounts are running fine.");
+
+        const totalRent = cur.tenants.reduce((a,b) => a + ((b.rent || 0) + (b.currentBillDues || 0)), 0);
+        const totalDepo = cur.tenants.reduce((a,b) => a + (b.deposit || 0), 0);
+        const totalExp = cur.expenses.reduce((a,b) => a + (b.amt || 0), 0);
+        
+        document.getElementById('rev').innerText = "₹" + totalRent;
+        document.getElementById('depoTotal').innerText = "₹" + totalDepo;
+        document.getElementById('spendTotal').innerText = "₹" + totalExp;
+        document.getElementById('profit').innerText = "₹" + (totalRent - totalExp);
+
+        const predBox = document.getElementById('predictionList'); predBox.innerHTML = '';
+        let hasPredictions = false;
+        cur.tenants.forEach(t => {
+            if(t.checkoutDate) {
+                const diffDays = Math.ceil((new Date(t.checkoutDate) - today) / (1000 * 60 * 60 * 24));
+                if(diffDays <= 15 && diffDays >= 0) {
+                    hasPredictions = true;
+                    predBox.innerHTML += `<div class='text-danger mb-1'>⚠️ Room ${t.room} (${t.name}) checkout in ${diffDays} days!</div>`;
+                }
+            }
+        });
+        if(!hasPredictions) predBox.innerText = currentLang==='kn'?"ಯಾವುದೇ ಮುನ್ಸೂಚನೆ ಇಲ್ಲ.":"No checkout events anticipated.";
+
+        const roomsMap = {};
+        cur.tenants.forEach(t => {
+            if(!roomsMap[t.room]) roomsMap[t.room] = { tenants: [], isAnyUnpaid: false, isAnyBlacklisted: false };
+            roomsMap[t.room].tenants.push(t);
+            if(t.paidStatus === 'Unpaid') roomsMap[t.room].isAnyUnpaid = true;
+            if(Object.keys(globalBlacklistData).some(k => globalBlacklistData[k].aadhar === t.aadhar)) roomsMap[t.room].isAnyBlacklisted = true;
+        });
+
+        const map = document.getElementById('roomMap'); map.innerHTML = '';
+        Object.keys(roomsMap).forEach(roomNo => {
+            const rData = roomsMap[roomNo]; let dots = '';
+            rData.tenants.forEach(() => { dots += `<span class="bed-dot bed-filled"></span>`; });
+            let extraClass = rData.isAnyBlacklisted ? 'blacklist-border pending-border' : (rData.isAnyUnpaid ? 'pending-border' : '');
+            map.innerHTML += `<div class="room-box ${extraClass}"><b class='text-primary'>R-${roomNo}</b><br><small class='text-white'>(${rData.tenants.length} ${currentLang==='kn'?'ಜನರು':'Tenants'})</small><br>${dots}</div>`;
+        });
+
+        const listContainer = document.getElementById('roomGroupedList'); listContainer.innerHTML = '';
+        Object.keys(roomsMap).forEach(roomNo => {
+            const rData = roomsMap[roomNo];
+            let tenantsHtml = '';
+            
+            rData.tenants.forEach(t => {
+                let badgeClass = t.paidStatus === 'Paid' ? 'bg-success' : 'bg-danger';
+                let localizedPaidLabel = t.paidStatus === 'Paid' ? dict.statusPaid : dict.statusUnpaid;
+                
+                let cateringBadge = t.foodSkip ? `<span class="badge bg-warning text-dark me-1">${dict.optOut}</span>` : `<span class="badge bg-info me-1">${dict.optIn}</span>`;
+                let totalCurrentStatementAmt = (t.rent || 0) + (t.currentBillDues || 0);
+
+                let isBl = Object.keys(globalBlacklistData).some(k => globalBlacklistData[k].aadhar === t.aadhar);
+                let blacklistAlertBadge = isBl ? `<span class="badge bg-danger ms-1 animate-pulse">FIREWALL LOCK (BLACKLIST)</span>` : ``;
+
+                let imgTag = t.photoData ? `<img src="${t.photoData}" class="preview-img">` : `<small class="text-dim d-block mt-1" style="font-size:11px;"><i class="fas fa-folder-open"></i> ${dict.noDoc}</small>`;
+
+                tenantsHtml += `
+                    <div class="tenant-sub-card border border-secondary">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="m-0 text-white fw-bold">${t.name} ${blacklistAlertBadge}</h6>
+                                <small class="text-dim d-block" style="font-size:12px;">
+                                    Rent Flow: <b>₹${t.rent}</b>/mo | Balances: <b class="text-warning">₹${t.currentBillDues || 0}</b> | Total Statements: <b class="text-accent">₹${totalCurrentStatementAmt}</b>
+                                </small>
+                                <small class="text-dim d-block" style="font-size:11px;">Intake Cycle: ${t.rentStartDate} | Checkout Frame: ${t.checkoutDate || 'Continuous'}</small>
+                                <div class="mt-2">
+                                    <span class="badge ${badgeClass} me-1">${localizedPaidLabel}</span>
+                                    ${cateringBadge}
+                                </div>
+                                ${imgTag}
+                            </div>
+                        </div>
+
+                        <div class="room-actions-container">
+                            <div class="button-row row-of-3">
+                                <button class="btn-custom-action text-danger" onclick="removeT('${t.id}')"><i class="fas fa-user-minus"></i><br>${dict.btnCheckout}</button>
+                                <button class="btn-custom-action text-warning" onclick="toggleRent('${t.id}')"><i class="fas fa-sync-alt"></i><br>${dict.btnToggleRent}</button>
+                                <button class="btn-custom-action text-info" onclick="chargePowerBill('${t.id}')"><i class="fas fa-bolt"></i><br>${dict.btnUtility}</button>
+                            </div>
+                            <div class="button-row row-of-3">
+                                <button class="btn-custom-action text-success" onclick="toggleMessSkip('${t.id}')"><i class="fas fa-utensils"></i><br>${dict.btnCatering}</button>
+                                <button class="btn-custom-action text-white" onclick="sendWhatsAppReceipt('${t.id}', 'receipt')"><i class="fas fa-file-invoice-dollar"></i><br>${dict.btnReceipt}</button>
+                                <button class="btn-custom-action text-warning" onclick="sendWhatsAppReceipt('${t.id}', 'alert')"><i class="fas fa-bell"></i><br>${dict.btnDue}</button>
+                            </div>
+                            <div class="button-row row-of-3">
+                                <button class="btn-custom-action text-danger w-100" style="flex:1;" onclick="triggerBiometricSim('${t.id}')"><i class="fas fa-door-open"></i><br>${dict.btnGate}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML += `
+                <div class="p-card border-secondary mb-3">
+                    <h5 class="text-primary fw-bold"><i class="fas fa-door-closed"></i> Room ${roomNo}</h5>
+                    ${tenantsHtml}
+                </div>
+            `;
+        });
+
+        const expBox = document.getElementById('expenseContainer'); expBox.innerHTML = '';
+        cur.expenses.forEach(e => {
+            expBox.innerHTML += `
+                <div class="p-2 mb-2 rounded bg-dark border border-secondary d-flex justify-content-between align-items-center" style="font-size:13px;">
+                    <div><b>${e.title}</b><br><small class="text-dim">${e.date}</small></div>
+                    <b class="text-danger">- ₹${e.amt}</b>
+                </div>
+            `;
+        });
+
+        const compBox = document.getElementById('complaintList'); compBox.innerHTML = '';
+        cur.complaints.forEach((c, i) => {
+            let statusBadge = c.status === 'Pending' ? 'bg-danger' : 'bg-success';
+            let actionBtn = c.status === 'Pending' ? `<button class="btn btn-xs btn-outline-success py-0 px-2 fw-bold" style="font-size:11px;" onclick="resolveComplaint(${i})">Resolve</button>` : '';
+            compBox.innerHTML += `
+                <div class="p-2 mb-2 rounded bg-dark border border-secondary" style="font-size:13px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <b>Room ${c.room}</b>
+                        <div>
+                            <span class="badge ${statusBadge} me-1">${c.status}</span>
+                            ${actionBtn}
+                        </div>
+                    </div>
+                    <p class="text-dim m-0 mt-1" style="font-size:12px;">${c.desc}</p>
+                </div>
+            `;
+        });
+
+        const blBox = document.getElementById('blacklistContainer'); blBox.innerHTML = '';
+        Object.keys(globalBlacklistData).forEach(k => {
+            const b = globalBlacklistData[k];
+            blBox.innerHTML += `
+                <li class="p-2 rounded bg-dark border border-danger mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <b class="text-white">${b.name}</b> <small class="text-dim">(Token: Redacted)</small><br>
+                            <span class="text-danger small">⚠️ ${b.reason}</span><br>
+                            <small class="text-dim" style="font-size:10px;">Reported: ${b.date} By ${b.reportedByPG}</small>
+                        </div>
+                        ${b.blockedByOwner === savedKey ? `<button class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size:10px;" onclick="unblockAadhar('${k}')">Purge</button>` : ''}
+                    </div>
+                </li>
+            `;
+        });
+    }
+
+    initSystemSync();
+</script>
+</body>
+</html>
 

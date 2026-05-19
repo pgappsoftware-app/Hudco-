@@ -37,7 +37,7 @@
         
         .tenant-sub-card { background: #0f172a; border-radius: 10px; padding: 12px; margin-top: 8px; border: 1px solid #475569; }
         .preview-img { max-width: 80px; max-height: 80px; border-radius: 6px; margin-top: 5px; display: block; object-fit: cover; border: 1px solid #475569; }
-        #activationScreen { position: fixed; top:0; left:0; width:100%; height:100%; background:#090d16; z-index: 99999; display: flex; align-items:center; justify-content:center; padding:20px; }
+        #activationScreen { position: fixed; top:0; left:0; width:100%; height:100%; background:#090d16; z-index: 99999; display: flex; align-items:center; justify-content:center; padding:20px; overflow-y: auto; }
         #lockScreen { position: fixed; top:0; left:0; width:100%; height:100%; background:#111827; z-index: 100000; display: none; align-items:center; justify-content:center; padding:20px; text-align: center; overflow-y: auto; }
         
         .injector-pulse { border-left: 5px solid var(--warning) !important; background: linear-gradient(90deg, #2a2215, #1e293b) !important; animation: pulseBorder 2s infinite; }
@@ -72,6 +72,8 @@
             white-space: normal; 
         }
         .btn-custom-action:hover { background: #334155; }
+        .link-action { color: #94a3b8; font-size: 13px; text-decoration: none; display: inline-block; margin-top: 15px; transition: color 0.2s; cursor: pointer; }
+        .link-action:hover { color: var(--primary); }
     </style>
 </head>
 <body>
@@ -80,8 +82,25 @@
     <div class="p-card border-primary text-center w-100" style="max-width: 450px;">
         <h3 class="text-primary fw-bold mb-2"><i class="fas fa-shield-alt"></i> HUDKO SECURITY</h3>
         <p id="lbl_enterLicense" class="text-dim small">Enter your system license ID to unlock the platform console.</p>
-        <input type="text" id="activationKeyInput" placeholder="Enter License Key (eg: Nitesh_098)" style="text-align: center;">
-        <button class="btn-action mt-2" id="btnVerifyLicense">Verify & Open Dashboard</button>
+        
+        <div id="auth_step_1">
+            <input type="text" id="activationKeyInput" placeholder="Enter License Key (eg: Nitesh_098)" style="text-align: center;">
+            <input type="email" id="authEmailInput" placeholder="Registered Owner Email ID" style="text-align: center; margin-top: 4px;">
+            <button class="btn-action mt-2" id="btnVerifyLicense">Verify Node Credentials</button>
+            <div class="text-center">
+                <a class="link-action" id="btnTriggerForgot"><i class="fas fa-unlock-alt"></i> Forgot Password? ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿದೆಯೇ?</a>
+            </div>
+        </div>
+
+        <div id="auth_step_2" style="display: none;">
+            <div class="alert alert-info bg-dark border-secondary text-white small text-start mb-3" id="authGateMessage"></div>
+            <label class="text-dim small float-start mb-1" id="lbl_passField">Enter Dashboard Password</label>
+            <input type="password" id="authPasswordInput" placeholder="••••••••" style="text-align: center;">
+            <button class="btn-action mt-2" id="btnFinalGateSubmit">Access Secure ERP</button>
+            <div class="text-center">
+                <a class="link-action" id="btnBackToStep1"><i class="fas fa-arrow-left"></i> Back / ಹಿಂತಿರುಗಿ</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -333,7 +352,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, get, child, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, get, child, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBE41ujYp8a9wkdAvcZM5SoPPFrzImNdrk",
@@ -348,7 +367,7 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    let savedKey = localStorage.getItem('hudko_owner_license_key') || null;
+    let savedKey = null; // ಆಟೋಮ್ಯಾಟಿಕ್ ಓಪನ್ ಆಗದಂತೆ ಇಲ್ಲಿ ಲೋಕಲ್ ಸ್ಟೋರೇಜ್ ಕೀಯನ್ನು ತೆಗೆಯಲಾಗಿದೆ
     let activePG = localStorage.getItem('hudko_active_pg') || 'Manipal HQ';
     let currentLang = localStorage.getItem('hudko_lang') || 'en';
     let pgData = {};
@@ -356,6 +375,7 @@
     let globalBlacklistData = {}; 
     let temporaryPhotoBase64 = "";
     let cachedGlobalNotice = null;
+    let authGateMode = "login"; 
 
     const MY_UPI_ID = "9108151310@axl"; 
     const MY_WHATSAPP_NUMBER = "919480112444"; 
@@ -393,8 +413,8 @@
             modalTitle: "Secure Registration Intake", uploadId: "Upload ID Proof Photo", cycleStart: "Rent Cycle Start Date", expectedCheck: "Expected Checkout Date",
             btnConfirmReg: "Confirm Secure Register", phReason: "Reason (Repairs, Internet etc.)", phAmt: "Amount ₹", phVName: "Vendor Name",
             phVQty: "Quantity Delivered Today", phVRate: "Rate Per Unit ₹", phDish: "Today's Dish (e.g., Masala Dosa)", phRoom: "Room No",
-            phDesc: "Issue Details", phBlName: "Fraudster Name", phBlAadhar: "ID System Token", phBlReason: "Reason for Blacklist",
-            phTName: "Tenant Full Name", phTAadhar: "ID Security Token", phTRoom: "Room Number", phTRent: "Monthly Base Rent ₹",
+            phDesc: "Issue Details", phBlName: "Fraudster Name", phBlAadhar: "ID Security Token", phBlReason: "Reason for Blacklist",
+            phTName: "Tenant Full Name", phTAadhar: "ID Card Token", phTRoom: "Room Number", phTRent: "Monthly Base Rent ₹",
             phTDepo: "Security Deposit ₹", phTPhone: "Tenant WhatsApp", phTParent: "Parent WhatsApp",
             statusPaid: "Paid", statusUnpaid: "Unpaid", optOut: "Catering Opt-Out", optIn: "Active Catering",
             noDoc: "No Document Stream Attached",
@@ -409,7 +429,7 @@
             lockSub: "ಮಂತ್ಲಿ ಸಬ್‌ಸ್ಕ್ರಿಪ್ಷನ್ ಪ್ಲಾನ್ ಅವಧಿ ಮುಗಿದಿದೆ!",
             lockDesc: "ನಿಮ್ಮ ಮಾಸಿಕ ಲೈಸೆನ್ಸ್ ಅವಧಿ ಮುಗಿದಿರುವುದು ಪತ್ತೆಯಾಗಿದೆ. ಅಡ್ಮಿನ್ ಕಂಟ್ರೋಲ್ ಪ್ಯಾನಲ್ ಮತ್ತು ಲೈವ್ ಡೇಟಾ ಪ್ರವೇಶವನ್ನು ತಾತ್ಕಾಲಿಕವಾಗಿ ನಿಲ್ಲಿಸಲಾಗಿದೆ.",
             lockContact: "ಸೇವೆಯನ್ನು ಮುಂದುವರಿಸಲು ತಕ್ಷಣ ಸಂಪರ್ಕಿಸಿ:",
-            rev: "ಒಟ್ಟು ಬಾಡಿಗೆ ಆದಾಯ", depo: "ಅಡ್ವಾನ್ಸ್ ಡೆಪಾಸಿಟ್", spend: "ಒಟ್ಟು ಖರ್ಚು", profit: "ನಿವ್ವಳ ಲಾಭ",
+            rev: "ಒಟ್ಟು ಬಾಡಿಗೆ ಆದಾಯ", depo: "ಅಡ್ವಾನ್ಸ್ ಡೆಪಾಸಿಟ್", spend: "ಒಟ್ಟು ಖರ್ಚು", profit: "ನಿವ್ವಳ லாಭ",
             fineTitle: "ಬಾಡಿಗೆ ಬಾಕಿ ಮತ್ತು ಲೇಟ್ ಫೈನ್ ಸ್ಟೇಟಸ್ ವಿವರ",
             predTitle: "ಮುಂದಿನ 15 ದಿನಗಳಲ್ಲಿ ಖಾಲಿ ಮಾಡಲಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳು (AI ವಿವರ)",
             matrixTitle: "ಲೈವ್ ರೂಮ್ ಮ್ಯಾಟ್ರಿಕ್ಸ್",
@@ -427,13 +447,13 @@
             modalTitle: "ಹೊಸ ವಿದ್ಯಾರ್ಥಿ ದಾಖಲಾತಿ ಫಾರ್ಮ್", uploadId: "ಐಡಿ ಕಾರ್ಡ್ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ", cycleStart: "ಬಾಡಿಗೆ ಆರಂಭವಾಗುವ ದಿನಾಂಕ", expectedCheck: "ಖಾಲಿ ಮಾಡುವ ಅಂದಾಜು ದಿನಾಂಕ",
             btnConfirmReg: "ದಾಖಲಾತಿಯನ್ನು ಖಚಿತಪಡಿಸಿ", phReason: "ಖರ್ಚಿನ ವಿವರ", phAmt: "ಮೊತ್ತ ₹", phVName: "ವೆಂಡರ್ ಹೆಸರು",
             phVQty: "ಇಂದು ತಂದ ಪ್ರಮಾಣ", phVRate: "ಒಂದು ಯೂನಿಟ್ ಬೆಲೆ ₹", phDish: "ಇಂದಿನ ಅಡುಗೆ (ಉದಾ: ಮಸಾಲ ದೋಸೆ)", phRoom: "ರೂಮ್ ಸಂಖ್ಯೆ",
-            phDesc: "ದೂರಿನ ವಿವರ", phBlName: "ಮೋಸಗಾರನ ಹೆಸರು", phBlAadhar: "ಐಡಿ ಕಾರ್ಡ್ ನಂಬರ್", phBlReason: "ಬ್ಲಾಕ್‌ಲಿಸ್ಟ್ ಮಾಡಲು ಕಾರಣ",
-            phTName: "ವಿದ್ಯಾರ್ಥಿಯ ಪೂರ್ಣ ಹೆಸರು", phTAadhar: "ಐಡಿ ಕಾರ್ಡ್ ಸಂಖ್ಯೆ", phTRoom: "ರೂಮ್ ಸಂಖ್ಯೆ", phTRent: "ತಿಂಗಳ ಬಾಡಿಗೆ ₹",
+            phDesc: "ದೂರಿನ ವಿವರ", phBlName: "ಮೋಸಗಾರನ ಹೆಸರು", phBlAadhar: "ID ಭದ್ರತಾ ಟೋಕನ್", phBlReason: "ಬ್ಲಾಕ್‌ಲಿಸ್ಟ್ ಮಾಡಲು ಕಾರಣ",
+            phTName: "ವಿದ್ಯಾರ್ಥಿಯ ಪೂರ್ಣ ಹೆಸರು", phTAadhar: "ID ಕಾರ್ಡ್ ಟೋಕನ್", phTRoom: "ರೂಮ್ ಸಂಖ್ಯೆ", phTRent: "ತಿಂಗಳ ಬಾಡಿಗೆ ₹",
             phTDepo: "ಮುಂಗಡ ಹಣ (Deposit) ₹", phTPhone: "ವಿದ್ಯಾರ್ಥಿ ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ", phTParent: "ಪೋಷಕರ ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ",
             statusPaid: "ಪಾವತಿಯಾಗಿದೆ", statusUnpaid: "ಬಾಕಿ ಇದೆ", optOut: "ಊಟ ಬೇಡ ಎಂದಿದ್ದಾರೆ", optIn: "ಊಟ ಮಾಡುತ್ತಿದ್ದಾರೆ",
             noDoc: "ಯಾವುದೇ ಐಡಿ ದಾಖಲೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ",
             btnCheckout: "ಖಾಲಿ ಮಾಡಿಸು", btnToggleRent: "ಬಾಡಿಗೆ ಸ್ಥಿತಿ ಬದಲಾಯಿಸಿ", btnUtility: "+ ಕರೆಂಟ್ ಬಿಲ್", btnCatering: "ಊಟದ ಸ್ಥಿತಿ ಬದಲಾಯಿಸಿ",
-            btnReceipt: "ರಸೀದಿ ಕಳುಹಿಸಿ", btnDue: "ಬಾಕಿ அலರ್ಟ್", btnGate: "ಗೇಟ್ அலರ್ಟ್",
+            btnReceipt: "ರಸೀದಿ ಕಳುಹಿಸಿ", btnDue: "ಬಾಕಿ ಅಲರ್ಟ್", btnGate: "ಗೇಟ್ ಅಲರ್ಟ್",
             liveNoticeTitle: "ಲೈವ್ ಅಡ್ಮಿನ್ ಅಧಿಕೃತ ಪ್ರಕಟಣೆ (NOTICE BOARD)"
         }
     };
@@ -554,7 +574,7 @@
         if(pgData && pgData[activePG]) renderAll();
     });
 
-    // --- 💥 CRITICAL FIX: PG SWITCHER AUTO RE-LOAD LISTENER 💥 ---
+    // --- PG SWITCHER AUTO RE-LOAD LISTENER ---
     document.getElementById('pgSwitcher').addEventListener('change', (e) => {
         activePG = e.target.value;
         localStorage.setItem('hudko_active_pg', activePG);
@@ -655,12 +675,12 @@
         
         let msg = "";
         if (currentLang === 'kn') {
-            msg = `🚨 *HUDKO ಸೆಕ್ಯುರಿಟಿ ಗೇಟ್‌ವೇ - ಕ್ಯಾಂಪಸ್ ಎಂಟ್ರಿ அலರ್ಟ್*\n\n` +
+            msg = `🚨 *HUDKO ಸೆಕ್ಯುರಿಟಿ ಗೇಟ್‌ವೇ - ಕ್ಯಾಂಪಸ್ ಎಂಟ್ರಿ ಅಲರ್ಟ್*\n\n` +
                   `ಗೌರವಾನ್ವಿತ ಪೋಷಕರೇ/ಪಾಲಕರೇ,\n` +
                   `ಇದು ನಿಮ್ಮ ಮಗ/ಮಗಳ ಕುರಿತು **${activePG}** ನಿಂದ ಕಳುಹಿಸಲಾದ ನೈಜ-ಸಮಯದ ಸುರಕ್ಷತಾ ಲಾಗ್ ಆಗಿದೆ.\n\n` +
                   `*🔒 ಸೆಕ್ಯುರಿಟಿ ಮಾಹಿತಿ:*\n` +
                   `• ವಿದ್ಯಾರ್ಥಿಯ ಹೆಸರು: *${t.name}*\n` +
-                  `• ನಿಗದಿಪಡಿಸಿದ ಕೋಣೆ: Unit ${t.room}\n` +
+                  `• ನಿಗದುಪಡಿಸಿದ ಕೋಣೆ: Unit ${t.room}\n` +
                   `• ಸುರಕ್ಷತಾ ಸ್ಥಿತಿ: *ಗೈರುಹಾಜರಿ / CURFEW TIMEOUT ALERT*\n` +
                   `• ದಾಖಲಾದ ಸಮಯ: ${new Date().toLocaleDateString()} | ${new Date().toLocaleTimeString()}\n\n` +
                   `ನಿಗದಿತ ಗೇಟ್ ಲಾಕ್ ಸಮಯ ಮುಗಿದರೂ ವಿದ್ಯಾರ್ಥಿಯು ಬಯೋಮೆಟ್ರಿಕ್ ಗೇಟ್‌ವೇ ಮೂಲಕ ತಮ್ಮ ಹಾಜರಾತಿಯನ್ನು ದಾಖಲಿಸಿಲ್ಲ.\n\n` +
@@ -716,22 +736,103 @@
         dbSave();
     };
 
+    // --- 🔑 ಫಾರ್ಗೋಟ್ ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತು ಮಾಸ್ಟರ್ ಲಾಗಿನ್ ಎಂಜಿನ್ ಲಿಸನರ್ಸ್ ---
     document.getElementById('btnVerifyLicense').addEventListener('click', () => {
+        handleGatewayAuthentication(false);
+    });
+
+    document.getElementById('btnTriggerForgot').addEventListener('click', () => {
+        handleGatewayAuthentication(true);
+    });
+
+    document.getElementById('btnBackToStep1').addEventListener('click', () => {
+        document.getElementById('auth_step_2').style.display = 'none';
+        document.getElementById('auth_step_1').style.display = 'block';
+        authGateMode = "login";
+    });
+
+    async function handleGatewayAuthentication(isForcedForgotMode) {
         const key = document.getElementById('activationKeyInput').value.trim();
+        const email = document.getElementById('authEmailInput').value.trim().toLowerCase();
+
         if(!key) return alert("System Error: License ID cannot be empty!");
-        
-        get(child(ref(database), 'owners/' + key + '/license')).then((snapshot) => {
-            if(snapshot.val()) { 
-                localStorage.setItem('hudko_owner_license_key', key); 
-                savedKey = key; 
-                initSystemSync(); 
-            } else { 
-                alert("❌ Invalid license security credentials!"); 
+        if(isForcedForgotMode && !email) {
+            return alert("🚨 Forgot Password ಕೆಲಸ ಮಾಡಲು ನೋಂದಾಯಿತ ಇಮೇಲ್ ಐಡಿ ತುಂಬುವುದು ಕಡ್ಡಾಯವಾಗಿದೆ!");
+        }
+
+        try {
+            const snapshot = await get(child(ref(database), 'owners/' + key + '/license'));
+            if(!snapshot.exists()) {
+                return alert("❌ Invalid license security credentials! ಸರಿಯಾದ ಕೀ ನಮೂದಿಸಿ.");
             }
-        });
+
+            const dbLicense = snapshot.val();
+
+            if(email && dbLicense.ownerEmail && dbLicense.ownerEmail.toLowerCase() !== email) {
+                return alert("🚨 ತಪ್ಪು ಇಮೇಲ್! ಈ ಲೈಸೆನ್ಸ್ ಕೀ ಮತ್ತು ಇಮೇಲ್ ಹೊಂದಾಣಿಕೆಯಾಗುತ್ತಿಲ್ಲ.");
+            }
+
+            if(isForcedForgotMode) {
+                authGateMode = "reset";
+                document.getElementById('authGateMessage').innerHTML = `<b>🔑 PASSWORD RESET NODE:</b><br>ನಿಮ್ಮ ಲೈಸೆನ್ಸ್ ಮತ್ತು ಇಮೇಲ್ ಕನ್ಫರ್ಮ್ ಆಗಿದೆ. ಈ ಅಪ್ಲಿಕೇಶನ್‌ಗೆ ಹೊಸ ಸೆಕ್ಯೂರ್ ಪಾಸ್‌ವರ್ಡ್ ಕ್ರಿಯೇಟ್ ಮಾಡಿ ಟೈಪ್ ಮಾಡಿ.`;
+                document.getElementById('lbl_passField').innerText = "Create New Password (ಹೊಸ ಪಾಸ್‌ವರ್ಡ್)";
+                document.getElementById('btnFinalGateSubmit').innerText = "Update & Save Password";
+            }
+            else if(!dbLicense.ownerPassword) {
+                authGateMode = "register";
+                document.getElementById('authGateMessage').innerHTML = `<b>🎉 WELCOME FRESH NODE!</b><br>ನಿಮ್ಮ ಲೈಸೆನ್ಸ್ ಸಕ್ರಿಯವಾಗಿದೆ. ಮೊದಲ ಬಾರಿಗೆ ಲಾಗಿನ್ ಆಗುತ್ತಿರುವುದರಿಂದ, ಭವಿಷ್ಯದ ಸುರಕ್ಷತೆಗಾಗಿ ಇಲ್ಲಿ ಒಂದು ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಕ್ರಿಯೇಟ್ ಮಾಡಿಕೊಳ್ಳಿ.`;
+                document.getElementById('lbl_passField').innerText = "Set Account Password (ಪಾಸ್‌ವರ್ಡ್ ಸೆಟ್ ಮಾಡಿ)";
+                document.getElementById('btnFinalGateSubmit').innerText = "Initialize Node & Save Password";
+            }
+            else {
+                authGateMode = "login";
+                document.getElementById('authGateMessage').innerHTML = `<b>👋 WELCOME BACK:</b><br>ನಿಮ್ಮ ಕ್ಲೌಡ್ ಕಂಟ್ರೋಲ್ ರೂಮ್ ರೆಡಿಯಾಗಿದೆ. ಲಾಗಿನ್ ಮಾಡಲು ನಿಮ್ಮ ಗುಪ್ತಪದವನ್ನು (Password) ನಮೂದಿಸಿ.`;
+                document.getElementById('lbl_passField').innerText = "Enter Dashboard Password";
+                document.getElementById('btnFinalGateSubmit').innerText = "Secure Authorization Entry";
+            }
+
+            document.getElementById('auth_step_1').style.display = 'none';
+            document.getElementById('auth_step_2').style.display = 'block';
+
+        } catch (error) {
+            alert("Firebase connection error: " + error.message);
+        }
+    }
+
+    document.getElementById('btnFinalGateSubmit').addEventListener('click', async () => {
+        const key = document.getElementById('activationKeyInput').value.trim();
+        const inputPass = document.getElementById('authPasswordInput').value.trim();
+
+        if(!inputPass || inputPass.length < 4) {
+            return alert("🚨 ಪಾಸ್‌ವರ್ಡ್ ಕನಿಷ್ಠ 4 ಕ್ಯಾರೆಕ್ಟರ್ ಇರಬೇಕು!");
+        }
+
+        try {
+            if(authGateMode === "register" || authGateMode === "reset") {
+                await update(ref(database, `owners/${key}/license`), {
+                    ownerPassword: inputPass
+                });
+                alert("🚀 ಪಾಸ್‌ವರ್ಡ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲ್ಪಟ್ಟಿದೆ! ನಿಮ್ಮ ಕ್ಲೌಡ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಲೈವ್ ಆಗುತ್ತಿದೆ.");
+            } 
+            else {
+                const snapshot = await get(child(ref(database), `owners/${key}/license/ownerPassword`));
+                if(snapshot.val() !== inputPass) {
+                    return alert("🚨 ತಪ್ಪು ಪಾಸ್‌ವರ್ಡ್! ಸರಿಯಾದ ಪಾಸ್‌ವರ್ಡ್ ಹಾಕಿ ಅಥವಾ Forgot Password ಲಿಂಕ್ ಬಳಸಿ.");
+                }
+            }
+
+            localStorage.setItem('hudko_owner_license_key', key); 
+            savedKey = key; 
+            document.getElementById('authPasswordInput').value = "";
+            initSystemSync();
+
+        } catch (e) {
+            alert("Auth process write execution failed.");
+        }
     });
 
     function initSystemSync() {
+        // ಒಂದು ವೇಳೆ ಲಾಗಿನ್ ಪ್ರೊಸೆಸ್ ಮುಗಿಯುವ ಮುನ್ನ ಕೀ ಇಲ್ಲದಿದ್ದರೆ ಫಂಕ್ಷನ್ ರನ್ ಆಗಲ್ಲ
         if(!savedKey) return;
         applyLanguageUI();
         
@@ -802,7 +903,6 @@
                 activePG = Object.keys(pgData)[0] || 'Manipal HQ';
             }
 
-            // --- ⚙️ DYNAMIC MULTI-OWNER MULTI-BRANCH SELECT DROPDOWN SYNC ⚙️ ---
             const sw = document.getElementById('pgSwitcher'); 
             sw.innerHTML = '';
             let allRegisteredBranches = Object.keys(pgData);
@@ -956,7 +1056,6 @@
         }
     });
 
-    // --- 🏢 ADD NEW BRANCH LINK EVENT LISTENER 🏢 ---
     document.getElementById('btnAddNewPG').addEventListener('click', () => {
         const newName = document.getElementById('newPgName').value.trim();
         if(!newName) return alert("Branch name cannot be empty!");
@@ -1121,7 +1220,7 @@
                                 <div class="mt-2">
                                     <span class="badge ${badgeClass} me-1">${localizedPaidLabel}</span>
                                     ${cateringBadge}
-                                </div>
+                                }</div>
                                 ${imgTag}
                             </div>
                         </div>
@@ -1199,8 +1298,8 @@
         });
     }
 
-    initSystemSync();
+    // ಆಟೋಮ್ಯಾಟಿಕ್ ರನ್ ಆಗುವುದನ್ನು ತಡೆಯಲು ಮತ್ತು ಭಾಷೆಯ ಇಂಟರ್ಫೇಸ್ ಸೆಟ್ ಮಾಡಲು ಇದನ್ನು ಮಾತ್ರ ಉಳಿಸಿಕೊಳ್ಳಲಾಗಿದೆ
+    applyLanguageUI();
 </script>
 </body>
 </html>
-

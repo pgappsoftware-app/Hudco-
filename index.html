@@ -12,7 +12,7 @@
             --accent: #10b981; --danger: #ef4444; --warning: #f59e0b; 
             --text-main: #f8fafc; --text-dim: #94a3b8;
         }
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
         .p-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; margin-bottom: 15px; position: relative; }
         
         .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
@@ -25,7 +25,7 @@
         @keyframes blink { 50% { border-color: transparent; } }
         
         .mobile-nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #334155; z-index: 1000; }
-        .nav-item { text-align: center; color: var(--text-dim); font-size: 11px; cursor: pointer; }
+        .nav-item { text-align: center; color: var(--text-dim); font-size: 11px; cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--primary); }
         
         input, select, textarea { background: #0f172a !important; border: 1px solid #334155 !important; color: white !important; padding: 12px; border-radius: 12px; margin-bottom: 12px; width: 100%; }
@@ -346,6 +346,7 @@
     <div class="nav-item" id="navExpenses" data-target="expenses"><i class="fas fa-wallet"></i><br><span id="nav_spend">Spend</span></div>
     <div class="nav-item" id="navComplaints" data-target="complaintsTab"><i class="fas fa-tools"></i><br><span id="nav_complaints">Complaints</span></div>
     <div class="nav-item" id="navSettings" data-target="settings"><i class="fas fa-cog"></i><br><span id="nav_hardware">Hardware</span></div>
+    <div class="nav-item text-danger" id="navMobileLogout"><i class="fas fa-sign-out-alt"></i><br><span id="nav_logout">Logout</span></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -367,7 +368,7 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    let savedKey = null; // ಆಟೋಮ್ಯಾಟಿಕ್ ಓಪನ್ ಆಗದಂತೆ ಇಲ್ಲಿ ಲೋಕಲ್ ಸ್ಟೋರೇಜ್ ಕೀಯನ್ನು ತೆಗೆಯಲಾಗಿದೆ
+    let savedKey = localStorage.getItem('hudko_owner_license_key') || null; 
     let activePG = localStorage.getItem('hudko_active_pg') || 'Manipal HQ';
     let currentLang = localStorage.getItem('hudko_lang') || 'en';
     let pgData = {};
@@ -409,7 +410,7 @@
             backupDesc: "Export or Import your critical storage blocks to ensure offline persistence.",
             addBranch: "Add Multiple Branches", btnAddBranch: "+ Add New PG Branch", blTitle: "Central Blacklist Network",
             blHistory: "Global Defaulter Database History", btnFormat: "Format All System Records", btnLogout: "Clear Saved Key & Logout",
-            navStats: "Stats", navTenants: "Tenants", navFood: "Food Menu", navSpend: "Spend", navComplaints: "Complaints", navHardware: "Hardware",
+            navStats: "Stats", navTenants: "Tenants", navFood: "Food Menu", navSpend: "Spend", navComplaints: "Complaints", navHardware: "Hardware", navLogout: "Logout",
             modalTitle: "Secure Registration Intake", uploadId: "Upload ID Proof Photo", cycleStart: "Rent Cycle Start Date", expectedCheck: "Expected Checkout Date",
             btnConfirmReg: "Confirm Secure Register", phReason: "Reason (Repairs, Internet etc.)", phAmt: "Amount ₹", phVName: "Vendor Name",
             phVQty: "Quantity Delivered Today", phVRate: "Rate Per Unit ₹", phDish: "Today's Dish (e.g., Masala Dosa)", phRoom: "Room No",
@@ -429,7 +430,7 @@
             lockSub: "ಮಂತ್ಲಿ ಸಬ್‌ಸ್ಕ್ರಿಪ್ಷನ್ ಪ್ಲಾನ್ ಅವಧಿ ಮುಗಿದಿದೆ!",
             lockDesc: "ನಿಮ್ಮ ಮಾಸಿಕ ಲೈಸೆನ್ಸ್ ಅವಧಿ ಮುಗಿದಿರುವುದು ಪತ್ತೆಯಾಗಿದೆ. ಅಡ್ಮಿನ್ ಕಂಟ್ರೋಲ್ ಪ್ಯಾನಲ್ ಮತ್ತು ಲೈವ್ ಡೇಟಾ ಪ್ರವೇಶವನ್ನು ತಾತ್ಕಾಲಿಕವಾಗಿ ನಿಲ್ಲಿಸಲಾಗಿದೆ.",
             lockContact: "ಸೇವೆಯನ್ನು ಮುಂದುವರಿಸಲು ತಕ್ಷಣ ಸಂಪರ್ಕಿಸಿ:",
-            rev: "ಒಟ್ಟು ಬಾಡಿಗೆ ಆದಾಯ", depo: "ಅಡ್ವಾನ್ಸ್ ಡೆಪಾಸಿಟ್", spend: "ಒಟ್ಟು ಖರ್ಚು", profit: "ನಿವ್ವಳ லாಭ",
+            rev: "ಒಟ್ಟು ಬಾಡಿಗೆ ಆದಾಯ", depo: "ಅಡ್ವಾನ್ಸ್ ಡೆಪಾಸಿಟ್", spend: "ಒಟ್ಟು ಖರ್ಚು", profit: "ನಿವ್ವಳ ಲಾಭ",
             fineTitle: "ಬಾಡಿಗೆ ಬಾಕಿ ಮತ್ತು ಲೇಟ್ ಫೈನ್ ಸ್ಟೇಟಸ್ ವಿವರ",
             predTitle: "ಮುಂದಿನ 15 ದಿನಗಳಲ್ಲಿ ಖಾಲಿ ಮಾಡಲಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳು (AI ವಿವರ)",
             matrixTitle: "ಲೈವ್ ರೂಮ್ ಮ್ಯಾಟ್ರಿಕ್ಸ್",
@@ -443,7 +444,7 @@
             backupDesc: "ನಿಮ್ಮ ಮುಖ್ಯ ಡೇಟಾ ಸುರಕ್ಷತೆಗಾಗಿ ಫೈಲ್ ಅನ್ನು ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಅಥವಾ ಇಂಪೋರ್ಟ್ ಮಾಡಿ ಇಟ್ಟುಕೊಳ್ಳಿ.",
             addBranch: "ಹೊಸ ಬ್ರಾಂಚ್‌ಗಳನ್ನು ಸೇರಿಸಿ", btnAddBranch: "+ ಹೊಸ ಪಿಜಿ ಸೇರಿಸಿ", blTitle: "ಕೇಂದ್ರ ಬ್ಲಾಕ್‌ಲಿಸ್ಟ್ ನೆಟ್‌ವರ್ಕ್",
             blHistory: "ಗ್ಲೋಬಲ್ ಡಿಫಾಲ್ಟರ್ ಡೇಟಾಬೇಸ್ ಇತಿಹಾಸ", btnFormat: "ಎಲ್ಲಾ ಸಿಸ್ಟಂ ರೆಕಾರ್ಡ್ ಡಿಲೀಟ್ ಮಾಡಿ", btnLogout: "ಖಾತೆಯಿಂದ ಲಾಗ್ ಔಟ್ ಮಾಡಿ",
-            navStats: "ವಿವರಗಳು", navTenants: "ಬಾಡಿಗೆದಾರರು", navFood: "ಅಡುಗೆ ಮೆನು", navSpend: "ಖರ್ಚುಗಳು", navComplaints: "ದೂರುಗಳು", navHardware: "ಹಾರ್ಡ್‌ವೇರ್",
+            navStats: "ವಿವರಗಳು", navTenants: "ಬಾಡಿಗೆದಾರರು", navFood: "ಅಡುಗೆ ಮೆನು", navSpend: "ಖರ್ಚುಗಳು", navComplaints: "ದೂರುಗಳು", navHardware: "ಹಾರ್ಡ್‌ವೇರ್", navLogout: "ಲಾಗ್ ಔಟ್",
             modalTitle: "ಹೊಸ ವಿದ್ಯಾರ್ಥಿ ದಾಖಲಾತಿ ಫಾರ್ಮ್", uploadId: "ಐಡಿ ಕಾರ್ಡ್ ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ", cycleStart: "ಬಾಡಿಗೆ ಆರಂಭವಾಗುವ ದಿನಾಂಕ", expectedCheck: "ಖಾಲಿ ಮಾಡುವ ಅಂದಾಜು ದಿನಾಂಕ",
             btnConfirmReg: "ದಾಖಲಾತಿಯನ್ನು ಖಚಿತಪಡಿಸಿ", phReason: "ಖರ್ಚಿನ ವಿವರ", phAmt: "ಮೊತ್ತ ₹", phVName: "ವೆಂಡರ್ ಹೆಸರು",
             phVQty: "ಇಂದು ತಂದ ಪ್ರಮಾಣ", phVRate: "ಒಂದು ಯೂನಿಟ್ ಬೆಲೆ ₹", phDish: "ಇಂದಿನ ಅಡುಗೆ (ಉದಾ: ಮಸಾಲ ದೋಸೆ)", phRoom: "ರೂಮ್ ಸಂಖ್ಯೆ",
@@ -518,6 +519,7 @@
         document.getElementById('nav_spend').innerText = dict.navSpend;
         document.getElementById('nav_complaints').innerText = dict.navComplaints;
         document.getElementById('nav_hardware').innerText = dict.navHardware;
+        document.getElementById('nav_logout').innerText = dict.navLogout;
 
         document.getElementById('lbl_modalTitle').innerText = dict.modalTitle;
         document.getElementById('lbl_uploadId').innerHTML = `<i class="fas fa-image"></i> ` + dict.uploadId;
@@ -564,6 +566,11 @@
             document.querySelectorAll('.mobile-nav .nav-item').forEach(nav => nav.classList.remove('active'));
             this.classList.add('active');
         });
+    });
+
+    // ಹೊಸದಾಗಿ ಸೇರಿಸಲಾದ ಮೊಬೈಲ್ ಲಾಗ್‌ಔಟ್ ಈವೆಂಟ್ ಲಿಸನರ್
+    document.getElementById('navMobileLogout').addEventListener('click', () => {
+        logoutLicense();
     });
 
     document.getElementById('langSwitcher').value = currentLang;
@@ -675,7 +682,7 @@
         
         let msg = "";
         if (currentLang === 'kn') {
-            msg = `🚨 *HUDKO ಸೆಕ್ಯುರಿಟಿ ಗೇಟ್‌ವೇ - ಕ್ಯಾಂಪಸ್ ಎಂಟ್ರಿ ಅಲರ್ಟ್*\n\n` +
+            msg = `🚨 *HUDKO ಸೆಕ್ಯುರಿಟಿ ಗೇಟ್‌ವೇ - ಕ್ಯಾಂಪಸ್ ಎಂಟ್ರಿ அலರ್ಟ್*\n\n` +
                   `ಗೌರವಾನ್ವಿತ ಪೋಷಕರೇ/ಪಾಲಕರೇ,\n` +
                   `ಇದು ನಿಮ್ಮ ಮಗ/ಮಗಳ ಕುರಿತು **${activePG}** ನಿಂದ ಕಳುಹಿಸಲಾದ ನೈಜ-ಸಮಯದ ಸುರಕ್ಷತಾ ಲಾಗ್ ಆಗಿದೆ.\n\n` +
                   `*🔒 ಸೆಕ್ಯುರಿಟಿ ಮಾಹಿತಿ:*\n` +
@@ -832,7 +839,6 @@
     });
 
     function initSystemSync() {
-        // ಒಂದು ವೇಳೆ ಲಾಗಿನ್ ಪ್ರೊಸೆಸ್ ಮುಗಿಯುವ ಮುನ್ನ ಕೀ ಇಲ್ಲದಿದ್ದರೆ ಫಂಕ್ಷನ್ ರನ್ ಆಗಲ್ಲ
         if(!savedKey) return;
         applyLanguageUI();
         
@@ -1113,7 +1119,13 @@
         }
     });
 
-    function logoutLicense() { localStorage.clear(); location.reload(); }
+    function logoutLicense() { 
+        const confText = currentLang === 'kn' ? "ಖಾತೆಯಿಂದ ಲಾಗ್ ಔಟ್ ಮಾಡಲು ಬಯಸುವಿರಾ?" : "Confirm logout from system?";
+        if(confirm(confText)) {
+            localStorage.clear(); 
+            location.reload(); 
+        }
+    }
     document.getElementById('btnLogout').addEventListener('click', logoutLicense);
 
     function renderAll() {
@@ -1220,7 +1232,7 @@
                                 <div class="mt-2">
                                     <span class="badge ${badgeClass} me-1">${localizedPaidLabel}</span>
                                     ${cateringBadge}
-                                }</div>
+                                </div>
                                 ${imgTag}
                             </div>
                         </div>
@@ -1298,8 +1310,11 @@
         });
     }
 
-    // ಆಟೋಮ್ಯಾಟಿಕ್ ರನ್ ಆಗುವುದನ್ನು ತಡೆಯಲು ಮತ್ತು ಭಾಷೆಯ ಇಂಟರ್ಫೇಸ್ ಸೆಟ್ ಮಾಡಲು ಇದನ್ನು ಮಾತ್ರ ಉಳಿಸಿಕೊಳ್ಳಲಾಗಿದೆ
+    // ಆಟೋಮ್ಯಾಟಿಕ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಲೋಡ್ ಆಗಲು ಬೇಕಾದ ಕೀ ವೆರಿಫಿಕೇಶನ್ ಮತ್ತು ಭಾಷೆಯ ಇಂಟರ್ಫೇಸ್ ಸೆಟಪ್
     applyLanguageUI();
+    if(savedKey) {
+        initSystemSync();
+    }
 </script>
 </body>
 </html>
